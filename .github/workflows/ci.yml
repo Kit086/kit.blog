@@ -38,7 +38,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     # Commit message starts with `release:` will delpoy
-    if: "startsWith(github.event.head_commit.message, 'release:')"
+    # if: "startsWith(github.event.head_commit.message, 'release:')"
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -64,6 +64,9 @@ jobs:
       run: dotnet publish src/Kit.Blog.csproj -c Release -o out --no-build
     - name: Generate blog files
       run: dotnet ./out/Kit.Blog.dll --cwd ./
+      
+    -- name: print
+       run: echo ${{ secrets.VERCEL_TOKEN }}-${{ secrets.VERCEL_ORG_ID }}-${{ secrets.VERCEL_PROJECT_ID }}
 
     - name: Deploy to Staging
       id: deploy-vercel-staging
@@ -84,7 +87,7 @@ jobs:
       uses: amondnet/vercel-action@v20
       id: deploy-vercel-production
       # Only push envet happened in main branch can deploy to Vercel
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
