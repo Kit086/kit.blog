@@ -65,7 +65,10 @@ jobs:
     - name: Generate blog files
       run: dotnet ./out/Kit.Blog.dll --cwd ./
       
-    - name: print
+    - name: print1
+      run: ls ./ | echo
+    
+    - name: print2
       run: echo ${{ secrets.VERCEL_TOKEN }}-${{ secrets.VERCEL_ORG_ID }}-${{ secrets.VERCEL_PROJECT_ID }}
 
     - name: Deploy to Staging
