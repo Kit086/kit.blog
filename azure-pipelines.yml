@@ -28,17 +28,11 @@ steps:
 - script: dotnet test src/Kit.Blog.csproj --no-restore
   displayName: 'dotnet test'
 
-- task: DotNetCoreCLI@2
+- script: dotnet run --project src/Kit.Blog.csproj --cwd ./ --post ./posts --theme ./theme --dist ./dist --no-build --verbosity normal
   displayName: 'dotnet run'
-  inputs:
-    command: 'run'
-    arguments: '--project src/Kit.Blog.csproj --cwd ./ --post ./posts --theme ./theme --dist ./dist --no-build --verbosity normal'
 
-- task: DotNetCoreCLI@2
+- script: dotnet publish src/Kit.Blog.csproj -c $(buildConfiguration) -o out --no-build
   displayName: 'dotnet publish'
-  inputs:
-    command: 'publish'
-    arguments: 'src/Kit.Blog.csproj -c $(buildConfiguration) -o out --no-build'
     
 - script: dotnet ./out/Kit.Blog.dll --cwd ./
   displayName: 'generate blog files'
