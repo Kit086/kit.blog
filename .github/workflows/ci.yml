@@ -23,11 +23,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
     - name: Restore nuget packages
-      run: dotnet restore
+      run: dotnet restore src/Kit.Blog.csproj
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build src/Kit.Blog.csproj --no-restore
     - name: Test
-      run: dotnet test --no-restore
+      run: dotnet test src/Kit.Blog.csproj --no-restore
     - name: Generate blog files
       run: dotnet run --project src/Kit.Blog.csproj \
             --cwd ./ \
@@ -55,13 +55,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
     - name: Restore nuget packages
-      run: dotnet restore
+      run: dotnet restore src/Kit.Blog.csproj
     - name: Test
-      run: dotnet test --no-restore
+      run: dotnet test src/Kit.Blog.csproj --no-restore
     - name: Build release
-      run: dotnet build -c Release --no-restore
+      run: dotnet build src/Kit.Blog.csproj -c Release --no-restore
     - name: Publish release
-      run: dotnet publish -c Release -o out --no-build
+      run: dotnet publish src/Kit.Blog.csproj -c Release -o out --no-build
     - name: Generate blog files
       run: dotnet ./out/Kit.Blog.dll --cwd ./
 
