@@ -23,12 +23,13 @@ steps:
   displayName: 'dotnet restore'
   inputs:
     command: 'restore'
+    arguments: '--project src/Kit.Blog.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
   inputs:
     command: 'build'
-    arguments: '--no-restore --configuration $(buildConfiguration)'
+    arguments: '--project src/Kit.Blog.csproj --no-restore --configuration $(buildConfiguration)'
   
 - task: DotNetCoreCLI@2
   inputs:
@@ -45,7 +46,7 @@ steps:
   displayName: 'dotnet publish'
   inputs:
     command: 'publish'
-    arguments: '-c $(buildConfiguration) -o out --no-build'
+    arguments: '--project src/Kit.Blog.csproj -c $(buildConfiguration) -o out --no-build'
     
 - script: dotnet ./out/Kit.Blog.dll --cwd ./
   displayName: 'generate blog files'
