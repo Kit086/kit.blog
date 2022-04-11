@@ -19,22 +19,14 @@ steps:
     version: '6.0.x'
     includePreviewVersions: false
 
-- task: DotNetCoreCLI@2
+- script: dotnet restore src/Kit.Blog.csproj
   displayName: 'dotnet restore'
-  inputs:
-    command: 'restore'
-    arguments: 'src/Kit.Blog.csproj'
 
-- task: DotNetCoreCLI@2
+- script: dotnet build src/Kit.Blog.csproj --no-restore --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
-  inputs:
-    command: 'build'
-    arguments: 'src/Kit.Blog.csproj --no-restore --configuration $(buildConfiguration)'
   
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    arguments: 'src/Kit.Blog.csproj --no-restore'
+- script: dotnet test src/Kit.Blog.csproj --no-restore
+  displayName: 'dotnet test'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet run'
