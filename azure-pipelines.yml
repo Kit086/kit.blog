@@ -37,4 +37,4 @@ steps:
 - script: dotnet ./out/Kit.Blog.dll --cwd ./
   displayName: 'generate blog files'
 
-- script: ls ./
+# TODO: Deploy
