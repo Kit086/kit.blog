@@ -1,0 +1,53 @@
+@using System;
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@Model.TagName</title>
+  <link rel="stylesheet" href="/styles/app.css" />
+  <style>
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="container">
+    <div style="margin-top: 1.25rem">
+      <a class="font-mono underline" href="/">cd ..</a>
+    </div>
+    <h1 class="font-sans">#@Model.TagName</h1>
+    <small class="text-light">共 @Model.Posts.Count 篇</small>
+  </header>
+  <main class="container" style="padding-top: 2rem;">
+    <article>
+      <ul>
+        @foreach (var item in Model.Posts)
+        {
+          <li style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+            <div style="margin-bottom: 5px;">
+              <a class="text-uppercase text-black hover-red" style="font-size: 1.25rem;margin-bottom: 5px;"
+              href="@item.PostRoute">@item.PostTitle</a>
+            </div>
+            <div class="text-light">
+              <span>@item.FrontMatter.CreateTime.ToString("MMM d, yyyy")</span>
+            </div>
+          </li>
+        }
+      </ul>
+    </article>
+  </main>
+  <footer class="container text-light" style="padding-bottom: 2.5rem;padding-top: 2rem;">
+    <a class="underline" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+    @DateTime.Now.Year © @Model.BlogConfig.Author
+  </footer>
+</body>
+
+</html>

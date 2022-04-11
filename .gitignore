@@ -1,0 +1,13 @@
+dist/
+public/
+bin/
+obj/
+.vs/
+.vscode/
+out/
+output/
+.vercel
+.ionide/
+.idea/
+*.user
+.fake
