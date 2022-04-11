@@ -1,0 +1,53 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'use dotnet'
+  inputs: 
+    version: '6.0.x'
+    includePreviewVersions: false
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: 'restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build $(buildConfiguration)'
+  inputs:
+    command: 'build'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+  
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    arguments: '--no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet run'
+  inputs:
+    command: 'run'
+    arguments: '--project src/Kit.Blog.csproj --cwd ./ --post ./posts --theme ./theme --dist ./dist --no-build --verbosity normal'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet publish'
+  inputs:
+    command: 'publish'
+    arguments: '-c $(buildConfiguration) -o out --no-build'
+    
+- script: dotnet ./out/Kit.Blog.dll --cwd ./
+  displayName: 'generate blog files'
+
+- script: ls ./
