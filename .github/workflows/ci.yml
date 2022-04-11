@@ -1,0 +1,94 @@
+name: Deploy blog
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Cache nuget package
+      uses: actions/cache@v1
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    - name: Restore nuget packages
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-restore
+    - name: Generate blog files
+      run: dotnet run --project src/Kit.Blog.csproj \
+            --cwd ./ \
+            --no-build \
+            --verbosity normal
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    # Commit message starts with `release:` will delpoy
+    if: "startsWith(github.event.head_commit.message, 'release:')"
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Cache nuget package
+      uses: actions/cache@v1
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    - name: Restore nuget packages
+      run: dotnet restore
+    - name: Test
+      run: dotnet test --no-restore
+    - name: Build release
+      run: dotnet build -c Release --no-restore
+    - name: Publish release
+      run: dotnet publish -c Release -o out --no-build
+    - name: Generate blog files
+      run: dotnet ./out/Kit.Blog.dll --cwd ./
+
+    - name: Deploy to Staging
+      id: deploy-vercel-staging
+      uses: amondnet/vercel-action@v20
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./dist
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+
+    - name: Preview url
+      run: |
+          echo ${{ steps.deploy-vercel-staging.outputs.preview-url }}
+    #TODO: add e2e test before deploying to production
+
+    - name: Deploy to Production
+      uses: amondnet/vercel-action@v20
+      id: deploy-vercel-production
+      # Only push envet happened in main branch can deploy to Vercel
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        working-directory: ./dist
+        scope: ${{ secrets.VERCEL_ORG_ID }}
