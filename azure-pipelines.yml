@@ -23,18 +23,18 @@ steps:
   displayName: 'dotnet restore'
   inputs:
     command: 'restore'
-    arguments: '--project src/Kit.Blog.csproj'
+    arguments: 'src/Kit.Blog.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
   inputs:
     command: 'build'
-    arguments: '--project src/Kit.Blog.csproj --no-restore --configuration $(buildConfiguration)'
+    arguments: 'src/Kit.Blog.csproj --no-restore --configuration $(buildConfiguration)'
   
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
-    arguments: '--no-restore'
+    arguments: 'src/Kit.Blog.csproj --no-restore'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet run'
@@ -46,7 +46,7 @@ steps:
   displayName: 'dotnet publish'
   inputs:
     command: 'publish'
-    arguments: '--project src/Kit.Blog.csproj -c $(buildConfiguration) -o out --no-build'
+    arguments: 'src/Kit.Blog.csproj -c $(buildConfiguration) -o out --no-build'
     
 - script: dotnet ./out/Kit.Blog.dll --cwd ./
   displayName: 'generate blog files'
