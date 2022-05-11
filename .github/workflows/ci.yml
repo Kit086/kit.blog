@@ -33,7 +33,7 @@ jobs:
             --output-dir ./dist \
             --posts-dir ./posts \
             --templates-dir ./templates \
-            --staticfiles-dir ./staticfiles\
+            --staticfiles-dir ./staticfiles \
             --no-build \
             --verbosity normal
 
@@ -70,7 +70,7 @@ jobs:
             --output-dir ./dist \
             --posts-dir ./posts \
             --templates-dir ./templates \
-            --staticfiles-dir ./staticfiles\
+            --staticfiles-dir ./staticfiles \
 
     - name: Deploy to Staging
       id: deploy-vercel-staging
