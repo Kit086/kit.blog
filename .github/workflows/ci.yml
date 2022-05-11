@@ -38,7 +38,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     # Commit message starts with `release:` will delpoy
-    if: "startsWith(github.event.head_commit.message, 'release:')"
+    # if: "startsWith(github.event.head_commit.message, 'release:')"
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
