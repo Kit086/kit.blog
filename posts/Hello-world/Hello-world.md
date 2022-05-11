@@ -9,9 +9,7 @@ tags:
   - 技术笔记
 ---
 
-
-
-# Hello World
+[TOC]
 
 ## 0. Test paragraph 0
 
@@ -31,7 +29,7 @@ This is my test post.
 
 ## 2. Test paragraph 2
 
-单行代码：（支持度一般）
+单行代码：
 
 `Console.WriteLine("Hello, World!");`
 
@@ -40,8 +38,26 @@ This is my test post.
 ## 3. Test paragraph 3
 
 ```c#
-Console.WriteLine("Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World!");
+Console.WriteLine("Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World! Hello, World!");
 Console.WriteLine("Hello, World!");
+```
+
+```c#
+public class CalculatorTests
+{
+    [Fact]
+    public void CanAdd()
+    {
+        var calculator = new Calculator();
+
+        int value1 = 1;
+        int value2 = 2;
+
+        var result = calculator.Add(value1, value2);
+
+        Assert.Equal(3, result);
+    }
+}
 ```
 
 ## 4. Test paragraph 4

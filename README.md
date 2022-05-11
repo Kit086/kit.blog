@@ -2,6 +2,12 @@
 
 This project copied part of the code of [tatwd/blog](https://github.com/tatwd/blog).
 
+PowerShell:
 ```
-dotnet run --project src/Kit.Blog.csproj --cwd ./ --post ./posts --theme ./theme --dist ./dist
+dotnet run --project src\Kit.Blog.csproj --output-dir .\dist --posts-dir .\posts --templates-dir .\templates --staticfiles-dir .\staticfiles   
+```
+
+Bash:
+```
+dotnet run --project src/Kit.Blog.csproj --output-dir ./dist --posts-dir ./posts --templates-dir ./templates --staticfiles-dir ./staticfiles   
 ```
