@@ -1,218 +1,207 @@
-﻿using Markdig;
-using Markdig.Extensions.Yaml;
-using Markdig.Parsers;
+﻿using RazorEngineCore;
+using YamlDotNet.Serialization;
+using Markdig;
+using Microsoft.Extensions.Configuration;
 using Markdig.Renderers;
 using Markdig.Syntax;
-using RazorEngineCore;
+using Markdig.Parsers;
+using Markdig.Extensions.Yaml;
 using Kit.Blog;
-using YamlDotNet.Serialization;
-using System.Text.Json;
-using System.Globalization;
-using Microsoft.Extensions.Configuration;
 
-// TODO: home 和 post 页面的 tag 展示
+using MdFilePathAndNewPathPairDict = System.Collections.Generic.Dictionary<string, string>;
 
-var blogConfig = new BlogConfig
-{
-    Title = "Kit Lau",
-    Author = "Kit Lau",
-};
+IConfigurationRoot cmdArgs = new ConfigurationBuilder()
+    .AddCommandLine(args)
+    .Build();
 
-var razorEngine = new RazorEngine();
-MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+string outputDir = cmdArgs["output-dir"] ?? throw new ArgumentNullException("The argument --output-dir is required.");
+string postsDir = cmdArgs["posts-dir"] ?? throw new ArgumentNullException("The argument --posts-dir is required.");
+string templatesDir = cmdArgs["templates-dir"] ?? throw new ArgumentNullException("The argument --templates-dir is required.");
+string staticfilesDir = cmdArgs["staticfiles-dir"] ?? throw new ArgumentNullException("The argument --staticfiles-dir is required.");
+
+outputDir += Path.DirectorySeparatorChar;
+postsDir += Path.DirectorySeparatorChar;
+templatesDir += Path.DirectorySeparatorChar;
+staticfilesDir += Path.DirectorySeparatorChar;
+
+string postsOutputDir = Path.Combine(outputDir, "posts") + Path.DirectorySeparatorChar;
+
+string indexTemplatePath = Path.Combine(templatesDir, "Index.cshtml");
+string postIndexTemplatePath = Path.Combine(templatesDir, "PostsIndex.cshtml");
+string aboutTemplatePath = Path.Combine(templatesDir, "About.cshtml");
+string postTemplatePath = Path.Combine(templatesDir, "Post.cshtml");
+string notFoundTemplatePath = Path.Combine(templatesDir, "404.cshtml");
+
+string headTemplatePath = Path.Combine(templatesDir, "Head.cshtml");
+string headerTemplatePath = Path.Combine(templatesDir, "Header.cshtml");
+string footerTemplatePath = Path.Combine(templatesDir, "Footer.cshtml");
+string scriptTemplatePath = Path.Combine(templatesDir, "Script.cshtml");
+
+RazorEngine razorEngine = new();
+MarkdownPipeline mdPipeline = new MarkdownPipelineBuilder()
     .UseAdvancedExtensions()
     .UseYamlFrontMatter()
+    .UseTableOfContent()
     .Build();
 IDeserializer yamlDeserializer = new DeserializerBuilder()
     .IgnoreUnmatchedProperties()
     .Build();
 
-var cmdArgs = new ConfigurationBuilder()
-    .AddCommandLine(args)
-    .Build();
+CopyStaticFiles(staticfilesDir, outputDir);
+MdFilePathAndNewPathPairDict mdFilePathAndNewPathPairDict = CopyAssetFilesAndGetMdFilesPathDict(postsDir, postsOutputDir);
+(IList<Page<Post>> postPages, IList<Post> posts) = GeneratePostsPageModel(mdFilePathAndNewPathPairDict);
+await RenderIndexPageAsync(indexTemplatePath, outputDir, posts.OrderByDescending(p => p.FrontMatter.LastUpdatedTime).Take(3));
+await RenderPostsIndexPageAsync(postIndexTemplatePath, postsOutputDir, posts);
+await RenderAboutPageAsync(aboutTemplatePath, outputDir);
+await Render404PageAsync(notFoundTemplatePath, outputDir);
+await RenderPostsPagesAsync(postTemplatePath, postPages);
 
-var cwd = (cmdArgs["cwd"] ?? Directory.GetCurrentDirectory()).TrimEnd('/').TrimEnd('\\');
-var distDir = cmdArgs["dist"] ?? $"{cwd}/dist";
-var postDir = cmdArgs["posts"] ?? $"{cwd}/posts";
-var themeDir = cmdArgs["theme"] ?? $"{cwd}/theme";
-var themeTemplateDir = $"{themeDir}/templates";
 
-// Generate post pages
-var posts = new List<PostViewModel>(16);
-var themePostTemplateFilePath = $"{themeTemplateDir}/post.cshtml";
-var themePostTemplateContent = File.ReadAllText(themePostTemplateFilePath);
-var postFiles = Directory.GetFiles(postDir, "*", SearchOption.AllDirectories);
-
-foreach (var path in postFiles.AsParallel())
+async Task Render404PageAsync(string templatePath, string distPath)
 {
-    var newPath = path.Replace(postDir, $"{distDir}/posts");
-    var postPageDir = Path.GetDirectoryName(newPath)!;
-    if (!Directory.Exists(postPageDir))
-        Directory.CreateDirectory(postPageDir);
-
-    // Copy others files to dist, just like images
-    if (!newPath.EndsWith(".md"))
+    string notFoundFilePath = Path.Combine(distPath, "404.html");
+    Page<object> page = new()
     {
-        File.Copy(path, newPath, true);
-        Console.WriteLine("Generated: {0} (copyed)", newPath.Replace(distDir, ""));
-        continue;
-    }
-
-    var htmlFile = newPath.Replace(".md", ".html");
-    var htmlFileName = Path.GetFileName(htmlFile);
-    var postRoute = Path.GetDirectoryName(htmlFile.Replace(distDir, ""))!;
-
-    using var writer = new StringWriter();
-    var renderer = new HtmlRenderer(writer);
-    pipeline.Setup(renderer);
-    var mdText = File.ReadAllText(path);
-    var document = MarkdownParser.Parse(mdText, pipeline);
-    var postFrontMatter = GetPostFrontMatter(document);
-    renderer.Render(document);
-    writer.Flush();
-    var html = writer.ToString();
-
-    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(newPath);
-    var parentDir = Directory.GetParent(newPath)!;
-    // var isPostPageDir = parentDir.FullName.EndsWith("/posts");
-    // var newPostRoute = isPostPageDir ? postRoute + "/" + htmlFileName : postRoute;
-    var newPostRoute = postRoute + "/" + htmlFileName;
-
-    var postViewModel = new PostViewModel
-    {
-        BlogConfig = blogConfig,
-        PostContent = html,
-        PostRoute = newPostRoute,
-        FrontMatter = postFrontMatter
+        Title = "404 | Kit Lau's Blog",
+        H1 = "Kit Lau's Blog 😿",
+        FilePath = notFoundFilePath
     };
-
-    // Console.WriteLine(JsonSerializer.Serialize(postViewModel));
-
-    posts.Add(postViewModel);
-
-    var template = await razorEngine.CompileAsync(themePostTemplateContent, option => {
-        option.AddAssemblyReference(typeof(Util));
-    });
-    var result = template.Run(postViewModel);
-
-    using StreamWriter swPost = File.CreateText(htmlFile);
-    await swPost.WriteAsync(result);
-    Console.WriteLine("Generated: {0}/{1}", postRoute, htmlFileName);
+    await RenderRazorPageAsync(templatePath, notFoundFilePath, page);
 }
 
-// Generate index.html
-var homeViewModel = new
+async Task RenderPostsPagesAsync(string templatePath, IList<Page<Post>> allPostsPages)
 {
-    BlogTitle = blogConfig.Title,
-    Author = blogConfig.Author,
-    Posts = posts.OrderByDescending(p => p.FrontMatter.LastUpdatedTime).Take(3)
-};
-await RenderRazorPageAsync($"{themeTemplateDir}/index.cshtml", $"{distDir}/index.html", homeViewModel);
-Console.WriteLine("Generated: /index.html");
-
-// Generate 404.html
-await RenderRazorPageAsync($"{themeTemplateDir}/404.cshtml", $"{distDir}/404.html");
-Console.WriteLine("Generated: /404.html");
-
-// Generate /posts/index.html
-var postsIndexViewModel = new {
-    Posts = posts.OrderByDescending(p => p.FrontMatter.LastUpdatedTime)
-};
-await RenderRazorPageAsync($"{themeTemplateDir}/posts.cshtml", $"{distDir}/posts/index.html", postsIndexViewModel);
-Console.WriteLine("Generated: /posts/index.html");
-
-// Generate about.html
-await RenderRazorPageAsync($"{themeTemplateDir}/about.cshtml", $"{distDir}/about.html");
-Console.WriteLine("Generated: /posts/index.html");
-
-// Generate tags pages
-var mapTags = new Dictionary<string, IList<PostViewModel>>();
-foreach (var post in posts)
-{
-    if (post.FrontMatter.Tags is null)
-        continue;
-
-    foreach (var tagName in post.FrontMatter.Tags)
+    foreach (var postPage in allPostsPages)
     {
-        if (!mapTags.ContainsKey(tagName))
-            mapTags[tagName] = new List<PostViewModel> { post };
-        else
-            mapTags[tagName].Add(post);
+        await RenderRazorPageAsync(templatePath, postPage.FilePath, postPage);
+        Console.WriteLine("Generated: {0}", postPage.FilePath.Replace(outputDir, ""));
     }
 }
 
-foreach (var(tagName, postsWithSameTag) in mapTags)
+async Task RenderAboutPageAsync(string templatePath, string distPath)
 {
-    var model = new
+    string aboutFilePath = Path.Combine(distPath, "about.html");
+    Page<object> page = new()
     {
-        BlogConfig = blogConfig,
-        TagName = tagName,
-        Posts = postsWithSameTag
+        Title = "About | Kit Lau's Blog",
+        H1 = "About Kit Lau",
+        FilePath = aboutFilePath
     };
-    var newTagRoute = $"/tags/{Util.ReplaceWithspaceByLodash(tagName)}/index.html";
-    await RenderRazorPageAsync($"{themeTemplateDir}/tag.cshtml",
-        $"{distDir}{newTagRoute}", model);
-    Console.WriteLine("Generated: {0}", newTagRoute);
+    await RenderRazorPageAsync(templatePath, aboutFilePath, page);
+    Console.WriteLine("Generated: {0}", aboutFilePath.Replace(outputDir, ""));
 }
 
-// Copy other files in theme directory
-var otherThemeFiles = Directory.GetFiles(themeDir, "*", SearchOption.AllDirectories);
-foreach (var path in otherThemeFiles.AsParallel())
+async Task RenderPostsIndexPageAsync(string templatePath, string distPath, IEnumerable<Post> allPosts)
 {
-    // Do not copy any files in templates dir
-    if (path.StartsWith(themeTemplateDir))
-        continue;
-
-    var newPath = path.Replace(themeDir, distDir);
-    var fileDir = Path.GetDirectoryName(newPath) !;
-
-    if (!Directory.Exists(fileDir))
-        Directory.CreateDirectory(fileDir);
-
-    File.Copy(path, newPath, overwrite : true);
-    Console.WriteLine("Generated: {0} (copyed)", newPath.Replace(distDir, ""));
+    string postsIndexFilePath = Path.Combine(distPath, "index.html");
+    Page<PostsIndex> page = new()
+    {
+        Title = "Posts | Kit Lau's Blog",
+        H1 = "Kit Lau's Posts",
+        FilePath = postsIndexFilePath,
+        ContentModel = new PostsIndex
+        {
+            AllPosts = allPosts
+        }
+    };
+    await RenderRazorPageAsync(templatePath, postsIndexFilePath, page);
+    Console.WriteLine("Generated: {0}", postsIndexFilePath.Replace(outputDir, ""));
 }
 
+async Task RenderIndexPageAsync(string templatePath, string distPath, IEnumerable<Post> indexPagePosts)
+{
+    string indexFilePath = Path.Combine(distPath, "index.html");
+    Page<Index> page = new()
+    {
+        Title = "Kit Lau's Blog",
+        H1 = "Kit Lau's Blog",
+        FilePath = indexFilePath,
+        ContentModel = new Index { IndexPagePosts = indexPagePosts }
+    };
+
+    await RenderRazorPageAsync(templatePath, indexFilePath, page);
+    Console.WriteLine("Generated: {0}", indexFilePath.Replace(outputDir, ""));
+}
 
 async Task RenderRazorPageAsync(string templatePath, string distPath, object? model = null)
 {
-    var dir = Path.GetDirectoryName(distPath) !;
+    string dir = Path.GetDirectoryName(distPath)!;
     if (!Directory.Exists(dir))
         Directory.CreateDirectory(dir);
 
-    var templateContent = File.ReadAllText(templatePath);
-    var template = await razorEngine.CompileAsync(templateContent, optin =>
+    string templateContent = GetTemplate(templatePath);
+    IRazorEngineCompiledTemplate template = await razorEngine.CompileAsync(templateContent, optin =>
     {
         optin.AddAssemblyReference(typeof(Util));
     });
-    var html = template.Run(model);
+    string html = template.Run(model);
+    html = html.Replace("class=\"language-c#\"", "class=\"language-csharp\"");
     using StreamWriter sw = File.CreateText(distPath);
     await sw.WriteAsync(html);
 }
 
-PostFrontMatterViewModel GetPostFrontMatter(MarkdownDocument document)
+(IList<Page<Post>>, IList<Post>) GeneratePostsPageModel(MdFilePathAndNewPathPairDict mdFilePathAndNewPathPairDict)
 {
-    var block = document
+    List<Page<Post>> pages = new(mdFilePathAndNewPathPairDict.Count);
+    List<Post> posts = new(mdFilePathAndNewPathPairDict.Count);
+    foreach ((string oldPath, string newPath) in mdFilePathAndNewPathPairDict)
+    {
+        string newDir = Path.GetDirectoryName(newPath)!;
+        using StringWriter writer = new();
+        HtmlRenderer renderer = new(writer);
+        mdPipeline.Setup(renderer);
+        string mdText = File.ReadAllText(oldPath);
+        MarkdownDocument mdDocument = MarkdownParser.Parse(mdText, mdPipeline);
+
+        PostFrontMatter postFrontMatter = GetPostFrontMatterModel(mdDocument);
+
+        renderer.Render(mdDocument);
+        writer.Flush();
+        string postHtmlContent = writer.ToString();
+
+        string newHtmlPath = Path.Combine(newDir, $"{postFrontMatter.Slug}.html");
+
+        Post post = new()
+        {
+            Content = postHtmlContent,
+            Route = newHtmlPath.Replace(outputDir, ""),
+            FrontMatter = postFrontMatter
+        };
+
+        Page<Post> page = new()
+        {
+            Title = $"{post.FrontMatter.Title} | Kit Lau's Blog",
+            H1 = post.FrontMatter.Title,
+            ContentModel = post,
+            FilePath = newHtmlPath
+        };
+
+        pages.Add(page);
+        posts.Add(post);
+    }
+    return (pages, posts);
+}
+
+PostFrontMatter GetPostFrontMatterModel(MarkdownDocument mdDocument)
+{
+    YamlFrontMatterBlock? block = mdDocument
         .Descendants<YamlFrontMatterBlock>()
         .FirstOrDefault();
 
     if (block is null)
         throw new ArgumentNullException(nameof(block), "Post must have a front matter!");
 
-    var yaml =
-        block
-        // this is not a mistake
-        // we have to call .Lines 2x
+    string yaml = block
         .Lines // StringLineGroup[]
         .Lines // StringLine[]
         .OrderByDescending(x => x.Line)
         .Select(x => $"{x}\n")
         .ToList()
         .Select(x => x.Replace("---", string.Empty))
-        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Where(x => !string.IsNullOrEmpty(x))
         .Aggregate((s, agg) => agg + s);
 
-    var frontMatter = yamlDeserializer.Deserialize<PostFrontMatterViewModel>(yaml)!;
+    PostFrontMatter frontMatter = yamlDeserializer.Deserialize<PostFrontMatter>(yaml);
 
     if (string.IsNullOrEmpty(frontMatter.Title))
         throw new ArgumentNullException(nameof(frontMatter.Title),
@@ -220,28 +209,100 @@ PostFrontMatterViewModel GetPostFrontMatter(MarkdownDocument document)
     if (frontMatter.CreateTime == default)
         throw new ArgumentNullException(nameof(frontMatter.CreateTime),
             "Post `create_time` is required in front matter!");
+    if (frontMatter.LastUpdatedTime == default)
+        frontMatter.LastUpdatedTime = frontMatter.CreateTime;
 
-    frontMatter.Tags = frontMatter.Tags ?? Array.Empty<string>();
+    frontMatter.Tags ??= Array.Empty<string>();
 
     return frontMatter;
 }
 
-public class BlogConfig
+
+MdFilePathAndNewPathPairDict CopyAssetFilesAndGetMdFilesPathDict(string dir, string outputDir)
+{
+    string[] filesPath = Directory.GetFiles(dir, "*", SearchOption.AllDirectories);
+    if (!Directory.Exists(outputDir))
+        Directory.CreateDirectory(outputDir);
+
+    MdFilePathAndNewPathPairDict mdPairsDict = new();
+
+    foreach (var filePath in filesPath)
+    {
+        string newPath = filePath.Replace(dir, outputDir);
+        string newDir = Path.GetDirectoryName(newPath)!;
+
+        if (!Directory.Exists(newDir))
+            Directory.CreateDirectory(newDir);
+
+        if (!newPath.EndsWith(".md"))
+        {
+            File.Copy(filePath, newPath, true);
+            Console.WriteLine("Generated: {0} (copyed)", newPath.Replace(outputDir, ""));
+            continue;
+        }
+
+        if (!mdPairsDict.TryGetValue(filePath, out string? newOne))
+            mdPairsDict.Add(filePath, newPath);
+        else
+            throw new ArgumentException("The file path must be unique!");
+    }
+    return mdPairsDict;
+}
+
+void CopyStaticFiles(string dir, string outputDir)
+{
+    string[] filesPath = Directory.GetFiles(dir, "*", SearchOption.AllDirectories);
+    if (!Directory.Exists(outputDir))
+        Directory.CreateDirectory(outputDir);
+    foreach (var filePath in filesPath)
+    {
+        string newPath = filePath.Replace(dir, outputDir);
+        string newDir = Path.GetDirectoryName(newPath)!;
+        if (!Directory.Exists(newDir))
+            Directory.CreateDirectory(newDir);
+
+        File.Copy(filePath, newPath, true);
+        Console.WriteLine("Generated: {0} (copyed)", newPath.Replace(outputDir, ""));
+    }
+}
+
+string GetTemplate(string templatePath)
+{
+    string templateContent = File.ReadAllText(templatePath);
+    templateContent = templateContent.Replace("$HEAD_PLACEHOLDER", File.ReadAllText(headTemplatePath));
+    templateContent = templateContent.Replace("$HEADER_PLACEHOLDER", File.ReadAllText(headerTemplatePath));
+    templateContent = templateContent.Replace("$FOOTER_PLACEHOLDER", File.ReadAllText(footerTemplatePath));
+    templateContent = templateContent.Replace("$SCRIPT_PLACEHOLDER", File.ReadAllText(scriptTemplatePath));
+
+    return templateContent;
+}
+
+public class Page<T> where T : class
 {
     public string Title { get; set; } = null!;
-    public string Author { get; set; } = null!;
+    public string H1 { get; set; } = null!;
+    public T? ContentModel { get; set; }
+    public string FilePath { get; set; } = null!;
 }
 
-public class PostViewModel
+public class PostsIndex
 {
-    public BlogConfig BlogConfig { get; set; } = null!;
-    public string PostContent { get; set; } = null!;
-    public string PostRoute { get; set; } = null!;
-    public PostFrontMatterViewModel FrontMatter { get; set; } = null!;
-    public string PostTitle => FrontMatter.Title;
+    public IEnumerable<Post> AllPosts { get; set; } = null!;
 }
 
-public class PostFrontMatterViewModel
+public class Index
+{
+    public IEnumerable<Post> IndexPagePosts { get; set; } = null!;
+}
+
+public class Post
+{
+    public string Content { get; set; } = null!;
+    public string Route { get; set; } = null!;
+    public PostFrontMatter FrontMatter { get; set; } = null!;
+}
+
+public class PostFrontMatter
 {
     [YamlMember(Alias = "title")]
     public string Title { get; set; } = null!;
