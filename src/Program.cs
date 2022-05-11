@@ -146,11 +146,7 @@ async Task RenderRazorPageAsync(string templatePath, string distPath, object? mo
     List<Post> posts = new(mdFilePathAndNewPathPairDict.Count);
     foreach ((string oldPath, string newPath) in mdFilePathAndNewPathPairDict)
     {
-        System.Console.WriteLine("newPath" + newPath);
         string newDir = Path.GetDirectoryName(newPath)!;
-        
-        System.Console.WriteLine("newDir" + newDir);
-
         using StringWriter writer = new();
         HtmlRenderer renderer = new(writer);
         mdPipeline.Setup(renderer);
@@ -164,7 +160,6 @@ async Task RenderRazorPageAsync(string templatePath, string distPath, object? mo
         string postHtmlContent = writer.ToString();
 
         string newHtmlPath = Path.Combine(newDir, $"{postFrontMatter.Slug}.html");
-        System.Console.WriteLine("newHtmlPath" + newHtmlPath);
 
         Post post = new()
         {
@@ -235,16 +230,6 @@ MdFilePathAndNewPathPairDict CopyAssetFilesAndGetMdFilesPathDict(string dir, str
     {
         string newPath = filePath.Replace(dir, outputDir);
         string newDir = Path.GetDirectoryName(newPath)!;
-
-        System.Console.WriteLine("====fuck====");
-        System.Console.WriteLine("dir" + dir);
-        System.Console.WriteLine("outputDir" + outputDir);
-        System.Console.WriteLine("filePath" + filePath);
-        System.Console.WriteLine("newPath" + newPath);
-        System.Console.WriteLine("newPir" + newDir);
-        System.Console.WriteLine("====fuck====");
-
-
 
         if (!Directory.Exists(newDir))
             Directory.CreateDirectory(newDir);

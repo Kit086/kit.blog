@@ -30,7 +30,10 @@ jobs:
       run: dotnet test src/Kit.Blog.csproj --no-restore
     - name: Generate blog files
       run: dotnet run --project src/Kit.Blog.csproj \
-            --cwd ./ \
+            --output-dir ./dist \
+            --posts-dir ./posts \
+            --templates-dir ./templates \
+            --staticfiles-dir ./staticfiles\
             --no-build \
             --verbosity normal
 
@@ -63,7 +66,11 @@ jobs:
     - name: Publish release
       run: dotnet publish src/Kit.Blog.csproj -c Release -o out --no-build
     - name: Generate blog files
-      run: dotnet ./out/Kit.Blog.dll --cwd ./
+      run: dotnet ./out/Kit.Blog.dll \
+            --output-dir ./dist \
+            --posts-dir ./posts \
+            --templates-dir ./templates \
+            --staticfiles-dir ./staticfiles\
 
     - name: Deploy to Staging
       id: deploy-vercel-staging
