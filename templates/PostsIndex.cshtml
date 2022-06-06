@@ -13,10 +13,9 @@ $HEAD_PLACEHOLDER
                 string timeTitle = $"GMT {item.FrontMatter.LastUpdatedTime.ToString("yyyy/MM/dd HH:mm:ss", us)}";
                 string timeDatetime = $"{item.FrontMatter.LastUpdatedTime.ToString("yyyy-MM-dd HH:mm:ss", us)}Z";
                 string tags = "<b><a>" + string.Join("</a></b>&nbsp;<b><a>", item.FrontMatter.Tags) + "</a></b>";
-                string route = item.Route.Replace("posts\\", "");
 
                 <div>
-                    <h2><a href="@route">@item.FrontMatter.Title</a></h2>
+                    <h2><a href="@item.Route">@item.FrontMatter.Title</a></h2>
                     <time class="text-sm sm:text-base" title="@timeTitle" datetime="@timeDatetime">
                         @item.FrontMatter.LastUpdatedTime.ToString("dd MMMM yyyy", us)
                     </time>

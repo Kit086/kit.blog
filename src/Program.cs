@@ -51,7 +51,7 @@ CopyStaticFiles(staticfilesDir, outputDir);
 MdFilePathAndNewPathPairDict mdFilePathAndNewPathPairDict = CopyAssetFilesAndGetMdFilesPathDict(postsDir, postsOutputDir);
 (IList<Page<Post>> postPages, IList<Post> posts) = GeneratePostsPageModel(mdFilePathAndNewPathPairDict);
 await RenderIndexPageAsync(indexTemplatePath, outputDir, posts.OrderByDescending(p => p.FrontMatter.LastUpdatedTime).Take(3));
-await RenderPostsIndexPageAsync(postIndexTemplatePath, postsOutputDir, posts);
+await RenderPostsIndexPageAsync(postIndexTemplatePath, postsOutputDir, posts.OrderByDescending(p => p.FrontMatter.LastUpdatedTime));
 await RenderAboutPageAsync(aboutTemplatePath, outputDir);
 await Render404PageAsync(notFoundTemplatePath, outputDir);
 await RenderPostsPagesAsync(postTemplatePath, postPages);
@@ -164,7 +164,7 @@ async Task RenderRazorPageAsync(string templatePath, string distPath, object? mo
         Post post = new()
         {
             Content = postHtmlContent,
-            Route = newHtmlPath.Replace(outputDir, ""),
+            Route = Path.DirectorySeparatorChar + newHtmlPath.Replace(outputDir, ""), // /符号开头的相对路径
             FrontMatter = postFrontMatter
         };
 
