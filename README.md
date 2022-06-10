@@ -1,5 +1,7 @@
 # kit.blog
 
+Blog Address: https://blog.kitlau.dev
+
 This project copied part of the code of [tatwd/blog](https://github.com/tatwd/blog).
 
 PowerShell:
