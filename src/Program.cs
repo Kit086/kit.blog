@@ -80,7 +80,7 @@ async Task RenderPostsPagesAsync(string templatePath, IList<Page<Post>> allPosts
 
 async Task RenderAboutPageAsync(string templatePath, string distPath)
 {
-    string aboutFilePath = Path.Combine(distPath, "about.html");
+    string aboutFilePath = Path.Combine(distPath, "about", "index.html");
     Page<object> page = new()
     {
         Title = "About | Kit Lau's Blog",
@@ -159,12 +159,15 @@ async Task RenderRazorPageAsync(string templatePath, string distPath, object? mo
         writer.Flush();
         string postHtmlContent = writer.ToString();
 
-        string newHtmlPath = Path.Combine(newDir, $"{postFrontMatter.Slug}.html");
+        string newHtmlPath = Path.Combine(newDir, $"index.html");
+
+        string newAbsoluteRoute = Path.DirectorySeparatorChar + newHtmlPath.Replace(outputDir, "");
+        string newRoute = newAbsoluteRoute.Substring(0, newAbsoluteRoute.LastIndexOf("index.html"));
 
         Post post = new()
         {
             Content = postHtmlContent,
-            Route = Path.DirectorySeparatorChar + newHtmlPath.Replace(outputDir, ""), // /符号开头的相对路径
+            Route = newRoute, // /符号开头的相对路径
             FrontMatter = postFrontMatter
         };
 
