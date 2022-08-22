@@ -192,7 +192,7 @@ Done!
 
 ## 3. 设计我们自己的 DI 框架
 
-创建一个新的 classlib 项目，我把它命名为 KDI。然后创建一个控制台项目 KDI.Console，用来消费我们的 DI 框架，它需要添加对 KDI 项目的引用。
+创建一个新的 classlib 项目，我是 Kit，所以我把它命名为 KDI。然后创建一个控制台项目 KDI.Console，用来消费我们的 DI 框架，它需要添加对 KDI 项目的引用。
 
 在 KDI.Console 中新建一个 Service 和接口 IService：
 
