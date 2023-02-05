@@ -6,5 +6,33 @@
     <link id="light-css-2" rel="stylesheet" href="/site.css" />
     <link id="dark-css-1" rel="stylesheet alternate" href="https://cdn.jsdelivr.net/npm/water.css@2.1.1/out/dark.min.css" integrity="sha256-FD9D6bdBVZQ4EOLqJCE0YNtDHl2BJ71gKCoTNGBnXCQ=" crossorigin="anonymous">
     <link id="dark-css-2" rel="stylesheet alternate" href="/site-tomorrow-night.css" />
+    <script>
+'use strict';
+const lightHL1 = document.getElementById('light-css-1');
+const lightHL2 = document.getElementById('light-css-2');
+const darkHL1 = document.getElementById('dark-css-1');
+const darkHL2 = document.getElementById('dark-css-2');
+const LS = window.localStorage;
+function switchThemeHead(isLight) {
+    const LSisLight = LS.getItem('KitBlogIsLight') === 'true';
+    isLight = isLight ?? !LSisLight;
+    lightHL1.rel = isLight ? 'stylesheet' : 'stylesheet alternate';
+    lightHL2.rel = isLight ? 'stylesheet' : 'stylesheet alternate';
+    darkHL1.rel = isLight ? 'stylesheet alternate' : 'stylesheet';
+    darkHL2.rel = isLight ? 'stylesheet alternate' : 'stylesheet';
+    LS.setItem('KitBlogIsLight', isLight);
+}
+const LSisLight = LS.getItem('KitBlogIsLight') === 'true';
+if (LS.getItem('KitBlogIsLight') === null) {
+    switchThemeHead(
+        !(
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+        )
+    );
+} else {
+    switchThemeHead(LSisLight);
+}
+    </script>
     <style>b a{padding-left:5px;padding-right:5px;border-radius:3px;}main{border-top:1px solid var(--border);margin-top:40px;}</style>
 </head>
