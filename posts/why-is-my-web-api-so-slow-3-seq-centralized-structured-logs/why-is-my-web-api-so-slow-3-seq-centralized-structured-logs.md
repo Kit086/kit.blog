@@ -1,8 +1,8 @@
 ---
 title: 为什么我的接口，慢得跟蜗牛一样啊？- 3. Seq 中心化结构化日志服务
 slug: why-is-my-web-api-so-slow-3-seq-centralized-structured-logs
-create_time: 2023-03-12 00:50:00
-last_updated: 2023-03-12 00:50:00
+create_time: 2023-03-13 10:00:00
+last_updated: 2023-03-13 10:00:00
 description: 本篇博客介绍了 ASP.NET Core 程序如何把日志记录到 Seq 这个中心化结构化日志服务器中，然后利用 Seq 做的日志分析，解决“为什么我的接口这么慢”的问题。
 tags:
   - dotnet
