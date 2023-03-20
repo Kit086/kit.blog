@@ -15,7 +15,9 @@ tags:
 
 我的博客会分发到微信订阅号、境外博客网站、境内博客网站三个媒介。
 
-本系列文章由“为什么我的接口，慢得跟蜗牛一样啊？”这个生产环境经常遇到的问题引出，通过多篇文章介绍了分析与处理线上问题的方法。该系列第一部分已经完结。
+本系列文章由“为什么我的接口，慢得跟蜗牛一样啊？”这个生产环境经常遇到的问题引出，通过多篇文章介绍了分析与处理线上问题的方法。该系列第一部分已经完结：[1. 计时和诊断结构化日志记录分析](#1-计时和诊断结构化日志记录分析)
+
+想让软件更可靠、更高效、迅速定位线上问题的根源、分析系统业务问题、性能瓶颈和优化点、监控系统运行状态和健康度？OpenTelemetry 了解一下？请看第二部分：[2. OpenTelemetry 实现跟踪（traces），度量（metrics）和日志（ logs）](#2-opentelemetry-实现跟踪traces度量metrics和日志-logs)
 
 ## 1. 计时和诊断结构化日志记录分析
 
@@ -41,4 +43,14 @@ tags:
 
 ## 2. OpenTelemetry 实现跟踪（traces），度量（metrics）和日志（ logs）
 
-敬请期待。
+### 微信公众号地址：
+
+1. [微服务生产环境故障难调试？OpenTelemetry 了解一下？：https://mp.weixin.qq.com/s/4LOwA9C7tD1-O27kFEn-pA](https://mp.weixin.qq.com/s/4LOwA9C7tD1-O27kFEn-pA)
+
+### 境内博客地址：
+
+1. [微服务生产环境故障难调试？OpenTelemetry 了解一下？：https://cat.aiursoft.cn/post/2023/3/19/troubleshooting-production-issues-get-to-know-opentelemetry](https://cat.aiursoft.cn/post/2023/3/19/troubleshooting-production-issues-get-to-know-opentelemetry)
+
+### 境外博客地址：
+
+1. [微服务生产环境故障难调试？OpenTelemetry 了解一下？：https://blog.kitlau.dev/posts/troubleshooting-production-issues-get-to-know-opentelemetry/](https://blog.kitlau.dev/posts/troubleshooting-production-issues-get-to-know-opentelemetry/)
