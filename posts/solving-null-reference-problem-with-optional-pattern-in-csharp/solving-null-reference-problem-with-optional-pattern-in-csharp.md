@@ -8,6 +8,12 @@ tags:
   - CSharp
 ---
 
+> 参考资料：
+> 
+> [https://github.com/zoran-horvat/optional](https://github.com/zoran-horvat/optional) 本文中展示的 Optional 模式的实现完全来自于 zoran horvat 大佬的这个 repo，我添加了如果没有使用 Optional 模式时而是使用 `Nullable` 的代码，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
+> 
+> [Build Your Own Option Type in C# and Use It Like a Pro - zoran horvat: https://www.youtube.com/watch?v=gpOQl2q0PTU](https://www.youtube.com/watch?v=gpOQl2q0PTU) 这是 zoran horvat 对于如何构建 Option 类型的视频讲解，强烈建议订阅他的 Youtube 频道！
+
 ## 0. 前言
 
 我之前写过这篇文章：[C# required：跟 string 的空引用异常说再见：https://cat.aiursoft.cn/post/2023/7/18/say-goodbye-to-string-null-reference-exceptions-with-csharps-required-keyword](https://cat.aiursoft.cn/post/2023/7/18/say-goodbye-to-string-null-reference-exceptions-with-csharps-required-keyword)，来尝试部分地解决 null reference 问题。今天这篇文章是使用 Optional 模式来尝试更加彻底地解决这个问题。
@@ -38,7 +44,7 @@ tags:
 |:-:|
 |<b>图 2 - 评论</b>|
 
-翻译过来就是：*我情愿让我的代码上线后炸成渣，被老板炒了鱿鱼，去农场种地，也不想再碰到“可能为空引用的返回”这个烦人的玩意儿。*
+翻译过来就是： **我情愿让我的代码上线后炸成渣，被老板炒了鱿鱼，去农场种地，也不想再碰到“可能为空引用的返回”这个烦人的玩意儿。**
 
 他至少还能去农场种地，你我有去农场种地的机会吗？
 
@@ -57,7 +63,7 @@ tags:
 
 [https://github.com/zoran-horvat/optional](https://github.com/zoran-horvat/optional)
 
-上面这个 github repo 是 Zoran Horvat 大佬创建的 optional 模式的类和对应的使用示例代码，我们可以在学习完它的用法之后，直接把该 repo 中的 `Option.cs`、`OptionalExtensions.cs`、`ValueOption.cs` 复制到我们的项目中使用。
+上面这个 github repo 是 **Zoran Horvat** 大佬创建的 optional 模式的类和对应的使用示例代码，我们可以在学习完它的用法之后，直接把该 repo 中的 `Option.cs`、`OptionalExtensions.cs`、`ValueOption.cs` 复制到我们的项目中使用。
 
 他在 youtube 上也配有视频，介绍了用法和设计这个类的思路：[Build Your Own Option Type in C# and Use It Like a Pro：https://www.youtube.com/watch?v=gpOQl2q0PTU](https://www.youtube.com/watch?v=gpOQl2q0PTU)
 
@@ -71,21 +77,366 @@ tags:
 
 - `ValueOption.cs`：定义了一个泛型结构体 `ValueOption<T>`，其中 `T` 是一个值类型。这个结构体提供了一些方法，如 `Some`、`None`、`Map`、`MapValue`、`MapOptional`、`MapOptionalValue`、`Reduce`、`Where` 和 `WhereNot`，用于创建和操作 `ValueOption<T>` 类型的值。
 
-与 C# 自带的 Nullable 模式相比，Optional 模式提供了更多的方法来操作可空值。例如，可以使用 `Map` 方法来对可空值进行转换，使用 `Reduce` 方法来提供默认值，使用 `Where` 和 `WhereNot` 方法来对可空值进行过滤。这些方法可以链式调用，使得代码更加简洁易读。
+与 C# 自带的 `Nullable` 模式相比，Optional 模式提供了更多的方法来操作可空值。例如，可以使用 `Map` 方法来对可空值进行转换，使用 `Reduce` 方法来提供默认值，使用 `Where` 和 `WhereNot` 方法来对可空值进行过滤。这些方法可以链式调用，使得代码更加简洁易读。
 
 此外，该代码仓库还提供了 `Option<T>` 和 `ValueOption<T>` 两种类型，分别用于处理可空引用类型和可空值类型。这样可以避免使用 `Nullable<T>` 类型时需要进行装箱和拆箱操作。
 
-使用示例的代码我就不在这里贴出了，可以到 [https://github.com/zoran-horvat/optional/blob/main/Source/Demo/Program.cs](https://github.com/zoran-horvat/optional/blob/main/Source/Demo/Program.cs) 查看示例代码。
+这里展示一下 Zoran Horvat 大佬写的 `Option.cs`：
+
+```csharp
+public struct Option<T> : IEquatable<Option<T>> where T : class
+{
+    private T? _content;
+
+    public static Option<T> Some(T obj) => new() { _content = obj };
+    public static Option<T> None() => new();
+
+    public Option<TResult> Map<TResult>(Func<T, TResult> map) where TResult : class =>
+        new() { _content = _content is not null ? map(_content) : null };
+    public ValueOption<TResult> MapValue<TResult>(Func<T, TResult> map) where TResult : struct =>
+        _content is not null ? ValueOption<TResult>.Some(map(_content)) : ValueOption<TResult>.None();
+
+    public Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map) where TResult : class =>
+        _content is not null ? map(_content) : Option<TResult>.None();
+    public ValueOption<TResult> MapOptionalValue<TResult>(Func<T, ValueOption<TResult>> map) where TResult : struct =>
+        _content is not null ? map(_content) : ValueOption<TResult>.None();
+
+    public T Reduce(T orElse) => _content ?? orElse;
+    public T Reduce(Func<T> orElse) => _content ?? orElse();
+
+    public Option<T> Where(Func<T, bool> predicate) =>
+        _content is not null && predicate(_content) ? this : Option<T>.None();
+
+    public Option<T> WhereNot(Func<T, bool> predicate) =>
+        _content is not null && !predicate(_content) ? this : Option<T>.None();
+
+    public override int GetHashCode() => _content?.GetHashCode() ?? 0;
+    public override bool Equals(object? other) => other is Option<T> option && Equals(option);
+
+    public bool Equals(Option<T> other) =>
+        _content is null ? other._content is null
+        : _content.Equals(other._content);
+
+    public static bool operator ==(Option<T>? a, Option<T>? b) => a is null ? b is null : a.Equals(b);
+    public static bool operator !=(Option<T>? a, Option<T>? b) => !(a == b);
+}
+```
+
+`OptionalExtensions.cs`：
+
+```csharp
+public static class OptionalExtensions
+{
+    public static Option<T> ToOption<T>(this T? obj) where T : class =>
+        obj is null ? Option<T>.None() : Option<T>.Some(obj);
+
+    public static Option<T> Where<T>(this T? obj, Func<T, bool> predicate) where T : class =>
+        obj is not null && predicate(obj) ? Option<T>.Some(obj) : Option<T>.None();
+
+    public static Option<T> WhereNot<T>(this T? obj, Func<T, bool> predicate) where T : class =>
+        obj is not null && !predicate(obj) ? Option<T>.Some(obj) : Option<T>.None();
+}
+```
+
+`ValueOption.cs`:
+
+```csharp
+public struct ValueOption<T> : IEquatable<ValueOption<T>> where T : struct
+{
+    private T? _content;
+
+    public static ValueOption<T> Some(T obj) => new() { _content = obj };
+    public static ValueOption<T> None() => new();
+
+    public Option<TResult> Map<TResult>(Func<T, TResult> map) where TResult : class =>
+        _content.HasValue ? Option<TResult>.Some(map(_content.Value)) : Option<TResult>.None();
+    public ValueOption<TResult> MapValue<TResult>(Func<T, TResult> map) where TResult : struct =>
+        new() { _content = _content.HasValue ? map(_content.Value) : null };
+
+    public Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map) where TResult : class =>
+        _content.HasValue ? map(_content.Value) : Option<TResult>.None();
+    public ValueOption<TResult> MapOptionalValue<TResult>(Func<T, ValueOption<TResult>> map) where TResult : struct =>
+        _content.HasValue ? map(_content.Value) : ValueOption<TResult>.None();
+
+    public T Reduce(T orElse) => _content ?? orElse;
+    public T Reduce(Func<T> orElse) => _content ?? orElse();
+
+    public ValueOption<T> Where(Func<T, bool> predicate) =>
+        _content.HasValue && predicate(_content.Value) ? this : ValueOption<T>.None();
+
+    public ValueOption<T> WhereNot(Func<T, bool> predicate) =>
+        _content.HasValue && !predicate(_content.Value) ? this : ValueOption<T>.None();
+
+    public override int GetHashCode() => _content?.GetHashCode() ?? 0;
+    public override bool Equals(object? other) => other is ValueOption<T> option && Equals(option);
+
+    public bool Equals(ValueOption<T> other) =>
+        _content.HasValue ? other._content.HasValue && _content.Value.Equals(other._content.Value)
+        : !other._content.HasValue;
+
+    public static bool operator ==(ValueOption<T> a, ValueOption<T> b) => a.Equals(b);
+    public static bool operator !=(ValueOption<T> a, ValueOption<T> b) => !(a.Equals(b));
+}
+```
+
+使用了 Option Type 的 Person 和 Book 的类：
+
+```csharp
+public class Person
+{
+    public string FirstName { get; }
+    public Option<string> LastName { get; }
+
+    private Person(string firstName, Option<string> lastName) =>
+        (FirstName, LastName) = (firstName, lastName);
+
+    public static Person Create(string firstName) =>
+        new(firstName, Option<string>.None());
+
+    public static Person Create(string firstName, string lastName) =>
+        new(firstName, Option<string>.Some(lastName));
+
+    public override string ToString() =>
+        this.LastName
+            .Map(lastName => $"{FirstName} {lastName}")
+            .Reduce(FirstName);
+}
+
+public class Book
+{
+    public string Title { get; }
+    public Option<Person> Author { get; }
+
+    private Book(string title, Option<Person> author) =>
+        (Title, Author) = (title, author);
+
+    public static Book Create(string title) =>
+        new(title, Option<Person>.None());
+
+    public static Book Create(string title, Person author) =>
+        new(title, Option<Person>.Some(author));
+
+    public override string ToString() =>
+        Author.Map(author => $"{Title} by {author}").Reduce(Title);
+}
+```
+
+如果没有 `Option`，使用 `Nullable` 模式的话，`Person` 类的 `public Option<string> LastName { get; }` 属性应该会是 `public string? LastName { get; }`，`Book` 类的 `public Option<Person> Author { get; }` 属性应该会是 `public Person? Author { get; }`。不用我说，您也应该能想到后续对这两个类使用的时候，要加多少 `?`、`?.` 和 `??` 操作符了，可能还会有 `!`。
+
+这是我写的如果没有使用 `Option` 而是使用 `Nullable` 的 `Book` 和 `Person` 类的代码，分别命名为 `NullableBook` 和 `NullablePerson`。这个命名显然会产生歧义，但是为了看起来分明，所以我还是这样命名了：
+
+```csharp
+public class NullableBook
+{
+    public string Title { get; }
+    public NullablePerson? Author { get; }
+
+    private NullableBook(string title, NullablePerson? author) =>
+        (Title, Author) = (title, author);
+
+    public static NullableBook Create(string title) =>
+        new(title, null);
+
+    public static NullableBook Create(string title, NullablePerson author) =>
+        new(title, author);
+
+    public override string ToString() =>
+        this.Author is not null
+            ? $"{Title} by {Author}"
+            : Title;
+}
+
+public class NullablePerson
+{
+    public string FirstName { get; }
+    public string? LastName { get; }
+
+    private NullablePerson(string firstName, string? lastName) =>
+        (FirstName, LastName) = (firstName, lastName);
+
+    public static NullablePerson Create(string firstName) =>
+        new(firstName, null);
+
+    public static NullablePerson Create(string firstName, string lastName) =>
+        new(firstName, lastName);
+
+    public override string ToString() =>
+        !string.IsNullOrWhiteSpace(this.LastName)
+            ? $"{FirstName} {LastName}"
+            : FirstName;
+}
+```
+
+使用 `Option` 的示例代码：
+
+```csharp
+Person mann = Person.Create("Thomas", "Mann");
+Person aristotle = Person.Create("Aristotle");
+Person austen = Person.Create("Jane", "Austen");
+Person asimov = Person.Create("Isaac", "Asimov");
+Person marukami = Person.Create("Haruki", "Murakami");
+
+Book faustus = Book.Create("Doctor Faustus", mann);
+Book rhetoric = Book.Create("Rhetoric", aristotle);
+Book nights = Book.Create("One Thousand and One Nights");
+Book foundation = Book.Create("Foundation", asimov);
+Book robots = Book.Create("I, Robot", asimov);
+Book pride = Book.Create("Pride and Prejudice", austen);
+Book mahabharata = Book.Create("Mahabharata");
+Book windup = Book.Create("Windup Bird Chronicle", marukami);
+
+IEnumerable<Book> library = new[] { faustus, rhetoric, nights, foundation, robots, pride, mahabharata, windup };
+
+var bookshelf = library
+    .GroupBy(GetAuthorInitial)
+    .OrderBy(group => group.Key.Reduce(string.Empty));
+
+foreach (var group in bookshelf)
+{
+    string header = group.Key.Map(initial => $"[ {initial} ]").Reduce("[   ]");
+    foreach (var book in group)
+    {
+        Console.WriteLine($"{header} -> {book}");
+        header = "     ";
+    }
+}
+
+Console.WriteLine(new string('-', 40));
+
+var authorNameLengths = library
+    .GroupBy(GetAuthorNameLength)
+    .OrderBy(group => group.Key.Reduce(0));
+
+foreach (var group in authorNameLengths)
+{
+    string header = group.Key.Map(length => $"[ {length,2} ]").Reduce("[    ]");
+    foreach (var book in group)
+    {
+        Console.WriteLine($"{header} -> {book}");
+        header = "      ";
+    }
+}
+
+ValueOption<int> GetAuthorNameLength(Book book) =>
+    book.Author.Map(GetName).MapValue(s => s.Length);
+
+string GetName(Person person) =>
+    person.LastName
+        .Map(lastName => $"{person.FirstName} {lastName}")
+        .Reduce(person.FirstName);
+
+Option<string> GetAuthorInitial(Book book)
+{
+    return book.Author.MapOptional(GetPersonInitial);
+}
+
+Option<string> GetPersonInitial(Person person) =>
+    person.LastName
+        .MapValue(GetInitial)
+        .Reduce(() => GetInitial(person.FirstName));
+
+Option<string> GetInitial(string name) =>
+    name.WhereNot(string.IsNullOrWhiteSpace)
+        .Map(s => s.TrimStart().Substring(0, 1).ToUpper());
+```
+
+如果不使用 Option，那么上面这个例子中的代码应该是这样的：
+
+```csharp
+NullablePerson mann = NullablePerson.Create("Thomas", "Mann");
+NullablePerson aristotle = NullablePerson.Create("Aristotle");
+NullablePerson austen = NullablePerson.Create("Jane", "Austen");
+NullablePerson asimov = NullablePerson.Create("Isaac", "Asimov");
+NullablePerson marukami = NullablePerson.Create("Haruki", "Murakami");
+
+NullableBook faustus = NullableBook.Create("Doctor Faustus", mann);
+NullableBook rhetoric = NullableBook.Create("Rhetoric", aristotle);
+NullableBook nights = NullableBook.Create("One Thousand and One Nights");
+NullableBook foundation = NullableBook.Create("Foundation", asimov);
+NullableBook robots = NullableBook.Create("I, Robot", asimov);
+NullableBook pride = NullableBook.Create("Pride and Prejudice", austen);
+NullableBook mahabharata = NullableBook.Create("Mahabharata");
+NullableBook windup = NullableBook.Create("Windup Bird Chronicle", marukami);
+
+IEnumerable<NullableBook> library = new[] { faustus, rhetoric, nights, foundation, robots, pride, mahabharata, windup };
+
+var author = GetAuthorInitial(rhetoric);
+
+Console.WriteLine(author);
+
+var bookshelf = library
+    .GroupBy(GetAuthorInitial)
+    .OrderBy(group => group.Key ?? string.Empty);
+
+foreach (var group in bookshelf)
+{
+    string header = !string.IsNullOrWhiteSpace(group.Key)?  $"[ {group.Key} ]" : "[   ]";
+    foreach (var book in group)
+    {
+        Console.WriteLine($"{header} -> {book}");
+        header = "     ";
+    }
+}
+
+Console.WriteLine(new string('-', 40));
+
+var authorNameLengths = library
+    .GroupBy(GetAuthorNameLength)
+    .OrderBy(group => group.Key ?? 0);
+
+foreach (var group in authorNameLengths)
+{
+    string header = group.Key is not null ? $"[ {group.Key,2} ]" : "[    ]";
+    foreach (var book in group)
+    {
+        Console.WriteLine($"{header} -> {book}");
+        header = "      ";
+    }
+}
+
+int? GetAuthorNameLength(NullableBook book) =>
+    book.Author is not null
+        ? GetName(book.Author).Length
+        : null;
+
+string GetName(NullablePerson person) =>
+    person.LastName is not null
+        ? $"{person.FirstName} {person.LastName}"
+        : person.FirstName;
+
+string? GetAuthorInitial(NullableBook book) =>
+    book.Author is not null && !string.IsNullOrWhiteSpace(book.Author.LastName)
+        ? GetPersonInitial(book.Author)
+        : book.Author is not null && !string.IsNullOrWhiteSpace(book.Author.FirstName)
+            ? GetPersonInitial(book.Author)
+            : null;
+
+string? GetPersonInitial(NullablePerson person) =>
+    !string.IsNullOrWhiteSpace(person.LastName)
+        ? GetInitial(person.LastName)
+        : GetInitial(person.FirstName);
+
+string? GetInitial(string name) =>
+    name?.TrimStart()?[..1]?.ToUpper();
+```
+
+没有使用 `Option` 模式，而是使用 `Nullable` 的这些代码是我自己添加的，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
 
 ## 5. Optional 模式相对于 C# 的 Nullable 特性的优势在哪？
 
+您可以对比 Zoran Horvat 与我的代码，来查看 Optional 模式和 Nullable 模式的区别，来选择您更喜欢的方式。
+
 看起来，Optional 模式导致代码写起来更加复杂了，可读性也并没有变好多少，那它的优点是什么呢？
 
-上一个小节**4. Optional 模式**中已经穿插讲过了它的部分优点，这里说一下我体会到的优势：
+上一个小节 **4. Optional 模式** 中已经穿插讲过了它的部分优点，这里说一下我体会到的优势：
 
 示例代码中，没有一个 `null`。我们不在方法中传递 `null`，就基本上避免了 null reference 异常了，会很省心，不用每次都检查方法的返回值是否是 `null`，而且每次都担惊受怕，害怕自己是不是又忘了检查 `null` 了。对于 Optional 的对象，当它不存在的时候，根本不会发生调用，也就不用担心调用某个方法会返回 `null` 了。
 
-而且我在**3. 我们需要什么才能解决因 null 而产生的头痛？**这一小节中提到的需要解决的问题，Optional 模式也全都解决了！
+而且我在 **3. 我们需要什么才能解决因 null 而产生的头痛？** 这一小节中提到的需要解决的问题，Optional 模式也全都解决了！
+
+在我看来，这两种模式都不错，但是 Optional 模式写起来感觉稍微绕一些，可能是因为我并不熟悉函数式编程。但使用 Optional 模式确实能规避我们不小心忘记进行 null check，同时急着上线项目而没有写单元测试集成测试，又忽视了 IDE 的警告，从而导致 null reference exception 的情况。
+
+而使用 `Nullable`，可以看到一堆 null check，例如 `book.Author is not null`，`!string.IsNullOrWhiteSpace(book.Author.LastName)`，还有很多 `?`、`?:`、`?.` 和 `??`，是有一些恼人，影响可读性。
 
 ## 6. 总结
 
