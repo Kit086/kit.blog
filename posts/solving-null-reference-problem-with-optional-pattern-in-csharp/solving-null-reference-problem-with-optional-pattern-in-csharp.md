@@ -8,6 +8,8 @@ tags:
   - CSharp
 ---
 
+[TOC]
+
 > 参考资料：
 > 
 > [https://github.com/zoran-horvat/optional](https://github.com/zoran-horvat/optional) 本文中展示的 Optional 模式的实现完全来自于 zoran horvat 大佬的这个 repo，我添加了如果没有使用 Optional 模式时而是使用 `Nullable` 的代码，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
