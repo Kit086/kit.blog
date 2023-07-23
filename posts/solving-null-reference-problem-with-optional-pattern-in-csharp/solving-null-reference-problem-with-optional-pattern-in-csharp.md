@@ -10,9 +10,11 @@ tags:
 
 [TOC]
 
+很久没写博客，写的乱糟糟的，不打算改了，代码比较重要，这些文字不太重要。
+
 > 参考资料：
 > 
-> [https://github.com/zoran-horvat/optional](https://github.com/zoran-horvat/optional) 本文中展示的 Optional 模式的实现完全来自于 zoran horvat 大佬的这个 repo，我添加了如果没有使用 Optional 模式时而是使用 `Nullable` 的代码，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
+> [https://github.com/zoran-horvat/optional](https://github.com/zoran-horvat/optional) 本文中展示的 Optional 模式的代码实现均来自于 zoran horvat 大佬的 repo，我添加了使用 `Nullable` 实现的代码作为对比。您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
 > 
 > [Build Your Own Option Type in C# and Use It Like a Pro - zoran horvat: https://www.youtube.com/watch?v=gpOQl2q0PTU](https://www.youtube.com/watch?v=gpOQl2q0PTU) 这是 zoran horvat 对于如何构建 Option 类型的视频讲解，强烈建议订阅他的 Youtube 频道！
 
@@ -38,7 +40,7 @@ tags:
 
 但这个视频是播客性质的，两个人通过聊天的形式来讲，对于英语一般的人包括我来说，真的很难看下去，半天讲不到重点，扯东扯西，看完了也依然不知道“永远摆脱空引用异常的方法”是什么。并不是说它讲得不好，是我菜了。
 
-在我看来，这个视频实际上在告诉我们如何使用当时推出的 C# 的 `Nullable` 特性，也就是我们常见的 `?`，也就是这种形式的代码： `string? firstName = null`。如果您对此有兴趣，可以浏览这篇博客：[https://devblogs.microsoft.com/dotnet/try-out-nullable-reference-types/?WT.mc_id=ondotnet-c9-cxa](https://devblogs.microsoft.com/dotnet/try-out-nullable-reference-types/?WT.mc_id=ondotnet-c9-cxa)
+在我看来，这个视频实际上在教我们如何使用当时 C# 推出的 `Nullable` 特性，也就是我们常见的 `?`，也就是这种形式的代码，例如： `string? firstName = null`。如果您对此有兴趣，可以浏览这篇博客：[https://devblogs.microsoft.com/dotnet/try-out-nullable-reference-types/?WT.mc_id=ondotnet-c9-cxa](https://devblogs.microsoft.com/dotnet/try-out-nullable-reference-types/?WT.mc_id=ondotnet-c9-cxa)
 
 但是引入了 `Nullable` 特性，也就引入了新的问题。从该视频评论就能看得出来：
 
@@ -52,12 +54,12 @@ tags:
 
 如果你有使用 `Nullable` 特性的经验，你应该会清楚，如果一个地方出现了 `?`，那么很快，它的上层的调用也会出现一堆 `?`，很快整个项目里就会充满了 `?`，`?.` 和 `??`，各种各样的 null check 和 null guard。就像病毒在传播一样，很难受。
 
-## 3. 我们需要什么才能解决因 null 而产生的头痛？
+## 3. 我们需要什么才能解决因 null 而带来的头痛？
 
 1. 我们需要一个安全地访问可为空的引用的方式，以此来一劳永逸地避免空引用问题，让我们不需要在所有的代码中都添加一大堆 `?`、`?.`、`??` 等符号来确保引用安全；
-2. 另外，我认为应该由调用者来决定当结果为 `null` 时该返回什么，这样代码可维护性和可读性都更好。当你有两个高层的方法调用某个底层方法时，对结果为 `null` 时所需要的返回值不同，例如有一个需要返回 `null`，有一个需要返回 `string.Empty`，如果调用方可以直接控制，就不需要写多个底层方法或者使用 `?? string.Empty` 这种写法了，虽然这种写法也还行，可以实现我们的需求；
-3. 我希望在可能出现 null reference 异常的地方会直接编译不通过，而不是在 IDE 中的波浪下划线警告。因为很多人是不看警告的，我在很急的时候也常常忽略警告，但这恰恰是 bug 之源。
-4. 最后，我希望尽可能减少代码中的 `null`，甚至干掉业务代码中的 `null`。我觉得这样会让我的代码人生更加快乐。
+2. 我认为应该由调用者来决定当结果为 `null` 时该返回什么，这样代码可维护性和可读性都更好。当你有两个高层的方法调用某个底层方法时，对结果为 `null` 时所需要的返回值不同，例如有一个需要返回 `null`，有一个需要返回 `string.Empty`，如果调用方可以直接控制，就不需要写多个底层方法或者使用 `?? string.Empty` 这种写法了；
+3. 我希望在可能出现 null reference 异常的地方会直接编译不通过，而不是在 IDE 中的波浪下划线警告。因为很多人是不看警告的，我在很急的时候也常常忽略警告，但这恰恰是 bug 之源；
+4. 我希望尽可能减少代码中的 `null`，甚至干掉业务代码中的 `null`。我觉得这样会让我的代码人生更加快乐。
 
 ## 4. Optional 模式的实现
 
@@ -422,7 +424,7 @@ string? GetInitial(string name) =>
     name?.TrimStart()?[..1]?.ToUpper();
 ```
 
-没有使用 `Option` 模式，而是使用 `Nullable` 的这些代码是我自己添加的，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
+这些使用 `Nullable` 的代码是我自己添加的，您可以在我的 repo 中找到：[https://github.com/Kit086/kit.demos/tree/main/OptionalPattern](https://github.com/Kit086/kit.demos/tree/main/OptionalPattern)；
 
 ## 5. Optional 模式相对于 C# 的 Nullable 特性的优势在哪？
 
@@ -432,14 +434,14 @@ string? GetInitial(string name) =>
 
 上一个小节 **4. Optional 模式** 中已经穿插讲过了它的部分优点，这里说一下我体会到的优势：
 
-示例代码中，没有一个 `null`。我们不在方法中传递 `null`，就基本上避免了 null reference 异常了，会很省心，不用每次都检查方法的返回值是否是 `null`，而且每次都担惊受怕，害怕自己是不是又忘了检查 `null` 了。对于 Optional 的对象，当它不存在的时候，根本不会发生调用，也就不用担心调用某个方法会返回 `null` 了。
+示例代码中，没有一个 `null`。我们不在方法中传递 `null`，就基本上避免了 null reference 异常了，会很省心，不用每次都担忧是不是又忘了检查 `null` 了。对于 Optional 的对象，当它不存在的时候，根本不会发生调用，也就不用担心调用某个方法会返回 `null` 了。
 
 而且我在 **3. 我们需要什么才能解决因 null 而产生的头痛？** 这一小节中提到的需要解决的问题，Optional 模式也全都解决了！
 
-在我看来，这两种模式都不错，但是 Optional 模式写起来感觉稍微绕一些，可能是因为我并不熟悉函数式编程。但使用 Optional 模式确实能规避我们不小心忘记进行 null check，同时急着上线项目而没有写单元测试集成测试，又忽视了 IDE 的警告，从而导致 null reference exception 的情况。
+但是 Optional 模式写起来感觉稍微绕一些，可能是因为我并不熟悉函数式编程。
 
-而使用 `Nullable`，可以看到一堆 null check，例如 `book.Author is not null`，`!string.IsNullOrWhiteSpace(book.Author.LastName)`，还有很多 `?`、`?:`、`?.` 和 `??`，是有一些恼人，影响可读性。
+虽然有小缺点，但让我们设想一种情况：“如果我们急着上线项目而没有写单元测试集成测试，又忽视了 IDE 的警告，从而忘记进行 null check，导致 null reference exception“。这种常见的情况，使用 Optional 模式就可以规避，如果有 null reference exception，它不会报警告，而是会直接无法通过静态编译检查。
 
 ## 6. 总结
 
-`Nullable` 和 Optional 模式，如果让我选择，我可能会根据项目的大小，参与项目的成员等因素来决定使用哪种方法，但它们都是不错的 null reference 的解决方案。
+`Nullable` 和 Optional 模式，如果让我选择，我可能会根据项目的大小，参与项目的成员的水平等因素来决定使用哪种方法，但它们都是不错的 null reference 的解决方案。
