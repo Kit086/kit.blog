@@ -8,6 +8,8 @@ tags:
   - dotnet
 ---
 
+[TOC]
+
 ## 0. Moq 发生了什么？
 
 大约两天前，.NET 最著名的的单元测试 Mock 库 [**Moq**: https://github.com/moq/moq](https://github.com/moq/moq) 被爆出从它的 4.20 版本开始，包含了一个 .NET 分析器，在你 build 使用了 Moq 的项目的时候，它会扫描你本地的 git 配置，拿到你本地的电子邮件地址并通过 Moq 作者的另一个项目 **SponsorLink** 发送到托管在 Azure 的某个服务上，以检查你是否是 Sponsor。相关的讨论可以在这个 Reddit 帖子：[https://www.reddit.com/r/dotnet/comments/15ljdcc/does_moq_in_its_latest_version_extract_and_send/](https://www.reddit.com/r/dotnet/comments/15ljdcc/does_moq_in_its_latest_version_extract_and_send/) 和这个 Github issue：[https://github.com/moq/moq/issues/1372](https://github.com/moq/moq/issues/1372) 了解。
