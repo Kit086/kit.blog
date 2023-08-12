@@ -14,18 +14,24 @@ tags:
 
 为什么要花时间写单元测试？我直接让测试团队人肉测试，然后直接上生产，有什么问题吗？
 
-1. 省钱
+1. **省钱**
+   
    你没看错，写单元测试能帮公司省钱。如果不写单元测试，你将无法确定你每次对代码的改动是否能够让应用原有的功能正常运行。即使你进行了手动测试，还是无法覆盖所有的情景，从而导致软件交付后，客户可能会发现 bug。所以单元测试实际上能够帮助公司省下很多钱。省下的钱绝对比工程师额外耗费时间写单元测试花掉的时间等价的工资要多得多。
-2. 单元测试可以作为文档
+2. **单元测试可以作为文档**
+   
    单元测试代码可以被当作文档来阅读。只需要阅读单元测试的 Method 的名字，就能理解被测试的方法在做什么，从而让团队中的每个人，甚至是刚刚加入团队的新人，理解这个应用程序在做什么。
-3. 帮助重构应用
+3. **帮助重构应用**
+   
    如果日后需要重构应用，覆盖了每一条业务流程的单元测试可以让你知道你在重构过程中有哪些事情忘记了去做。
-4. 可以使程序员写出更好的代码
+4. **可以使程序员写出更好的代码**
+   
    因为你需要写更好的代码来适应更好的单元测试，就像你学会了“左右互搏”，单元测试让你写更好的代码，更好的代码让你更轻松地写单元测试，让你的代码水平和整个项目的代码质量都有很大的提升。
 
 本文的示例代码没有使用最近有争议的 `Moq` 库，而是使用了 `NSubstitute` 代替。
 
 本文承接上一篇文章：[借 Moq 事件谈一谈单元测试的重要性：https://cat.aiursoft.cn/post/2023/8/10/importance-of-unit-testing-with-moq](https://cat.aiursoft.cn/post/2023/8/10/importance-of-unit-testing-with-moq)，但如果您只想学习如何编写单元测试，则没有必要浏览上一篇文章。
+
+**插播一条广告：😁鄙人正在寻找新的工作机会，最好是 work-life balance 的工作，base 青岛，有远程工作机会也不错，感兴趣的请通过电子邮件联系我：kit.j.lau@outlook.com，谢谢！**
 
 下面我们尝试 **根据实际例子学会单元测试**。
 
@@ -33,7 +39,7 @@ tags:
 
 ## 1. 被测试代码
 
-我准备了一个待测试的例子，它是一个简单的图书管理系统，项目名叫 `BookManager`，包括一个 `Book` 类，一个 `IBookRepository` 接口，一个 `BookService` 类，以及一些方法。
+我准备了一个待测试的例子，它是一个简单的图书管理系统，项目名叫 `BookManager`，包括一个 `Book` 类，一个 `IBookRepository` 接口，一个 `BookService` 类，以及一些方法。这部分代码您不需要细看，就是很普通的业务代码。
 
 `Book` 类：
 
@@ -125,11 +131,23 @@ public sealed class BookService
 
 `xUnit` 是一个流行的 .NET 单元测试框架，它提供了一些特性和约定来编写和组织测试用例。`NSubstitiue` 是一个轻量级的模拟框架（Mock），它可以用来创建和配置模拟对象，以便在测试中替代真实的依赖项。`FluentAssertions` 是一个断言库，它可以用来验证测试结果是否符合预期，它提供了一些易于阅读和表达的断言方法。
 
+当您在 Visual Studio 或者其它 IDE 中新建项目时，应该可以看到 xUnit 的模板项目。或者使用 dotnet cli 命令：`dotnet new xunit -o .\BookManager.Tests.Unit\`。
+
+然后您可以使用您的 IDE 中的 Nuget 管理器安装 `NSubstitiue` 和 `FluentAssertions`，或者使用这两条 dotnet cli 命令：
+
+```powershell
+cd .\BookManager.Tests.Unit\
+dotnet add package nsubstitute
+dotnet add package fluentassertions
+```
+
+别忘了添加 xUnit 项目对 BookManager 项目的引用：`dotnet add reference ..\BookManager\`。
+
 为了为 `BookService` 写单元测试，我们需要遵循以下的步骤：
 
 1. 创建一个新的项目，命名为 `BookManager.Tests.Unit`，意为对 `BookManager` 项目的单元测试。该单元测试项目引用 `xUnit`、`NSubstitiue` 和 `FluentAssertions` 这 3 个 Nuget 库，以及 `BookManager` 项目。
 2. 创建一个 `BookServiceTests` 类，用 `[Fact]` 特性或 `[Theory]` 特性标记每个测试方法，这两个特性之间的区别我们一会介绍代码时再说。
-3. 在这个测试类中，创建一个 `BookService` 的实例，命名为 `_sut`，意为 system under test，被测试的系统，并在该类的构造函数中为它赋值。创建实例时传入一个 `IBookRepository` 的模拟对象作为参数，该模拟对象使用 `NSubstitute` 构建。 **这样就能避免调用真正的 `BookRepository`，从而对数据库产生影响**，也省去了在单元测试项目中配置数据库连接字符串等东西的操作。
+3. 在这个测试类中，创建一个 `BookService` 的实例，命名为 `_sut`，意为 system under test —— 被测试的系统，并在该类的构造函数中为它赋值。创建实例时传入一个 `IBookRepository` 的模拟对象作为参数，该模拟对象使用 `NSubstitute` 构建。 **这样就能避免调用真正的 `BookRepository`，从而对数据库产生影响**，也省去了在单元测试项目中配置数据库连接字符串等东西的操作。
 4. 使用 `NSubstitiue` 来配置模拟对象的行为，例如返回一些预设的数据或抛出一些异常。
 5. 调用 `BookService` 的方法，并使用 `FluentAssertions` 来验证返回值或异常是否符合预期。
 6. 运行所有的测试，并检查是否通过。
@@ -168,6 +186,8 @@ public class BookServiceTests
 - 我们准备了一组书籍 List 做测试数据。
 
 每行代码做了什么，我在代码示例里均提供了注释，请阅读。
+
+**注意，我们的例子中并没有太多业务逻辑，只是做一些参数的验证，可能并不是个好例子，但是展示了比较完整的单元测试写法。编写单元测试的思想是需要您在实践中不断学习的。**
 
 ## 4. 编写测试方法
 
@@ -210,8 +230,6 @@ result.Should().OnlyContain(b => b.Author == author); // 断言 result 的书籍
 ```
 
 这三行代码来断言测试的结果。当返回结果为 null 或不包含两本书或包含的书的 Author 属性不等于 author 变量值时，这个测试都会失败。
-
-**插播一条广告：😁鄙人正在寻找新的工作机会，最好是 work-life balance 的工作，base 青岛，有远程工作机会也不错，感兴趣的请通过电子邮件联系我：kit.j.lau@outlook.com，谢谢！**
 
 ### `[Theory]`
 
@@ -328,7 +346,11 @@ Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration:
 
 如果您想单独运行某个测试方法或者调试某个测试方法，请根据您使用的 IDE 中的提示来进行，一般都是在该方法签名的这行代码的左侧有一个绿色的三角按钮。或者右键它选择 run test 或 debug test。
 
-但在 IDE 中运行，看测试结果会比较直观。
+但在 IDE 中运行，看测试结果会比较直观：
+
+|![图 1 - 单元测试运行结果](assets/2023-08-12-10-08-50.png)|
+|:-:|
+|**图 1 - 单元测试运行结果**|
 
 还有生成测试报告文件等功能，但这些都不属于入门内容，所以本篇教程不涉及。
 
@@ -336,6 +358,8 @@ Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration:
 
 因为这只是一个 5 分钟的入门教程，所以不再展开讲，剩下的您只需要去这几个库的官方文档按照您的需要来查询即可。编写单元测试的核心内容我都已经讲完了。
 
-`xUnit` 还有一些高端功能，在单元测试中用得不多，但集成测试中很有用。如果我后面还有时间的话，可以考虑写集成测试的入门介绍。
+`xUnit` 还有一些高端功能，在单元测试中用得不多，但集成测试中很有用。如果后面有机会的话，可以考虑写集成测试的入门介绍。
+
+下一篇文章，我目前计划写一下如何利用单元测试重构一段旧的垃圾代码，以展现单元测试的实际价值。
 
 **最后来一条广告：😁鄙人正在寻找新的工作机会，最好是 work-life balance 的工作，base 青岛，有远程工作机会也不错，感兴趣的请通过电子邮件联系我：kit.j.lau@outlook.com，谢谢！**
