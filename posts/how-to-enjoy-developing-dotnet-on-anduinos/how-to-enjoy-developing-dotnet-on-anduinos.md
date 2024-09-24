@@ -13,17 +13,17 @@ tags:
 
 ## 0. 为什么会有这篇博客
 
-最近上手了 [AnduinOS: https://www.anduinos.com/](https://www.anduinos.com/)，作为一个 .NET 开发，上手后的重要的事之一就是配置一套舒适的开发环境。
+最近，我开始探索 [AnduinOS: https://www.anduinos.com/](https://www.anduinos.com/)。
 
-由于 AnduinOS 是一个 Linux 的发行版本，所以现在我们失去了 Visual Studio。此时显然 Jetbrains Rider 是上上之选（即使在 Windows 上，Jetbrains Rider 也是上上之选），然而 Rider 没有免费的社区版。作为一个贫穷的开发者，我负担不起 Rider。
+作为一名 .NET 开发者，配置一个舒适的开发环境是我上手后必须面对的挑战。由于 AnduinOS 是一个 Linux 发行版，我们不得不告别 Visual Studio。尽管 Jetbrains Rider 是一个出色的选择，但没有免费的社区版，这对我这样的贫穷开发者来说，显得有些奢侈。
 
-如果你重度依赖 Visual Studio，你甚至可以走邪路，例如装一个 Windows 虚拟机。但那就失去了一些用 AnduinOS 的意义。别慌，我们还有 VSCode 可用。
+当然，如果你实在无法割舍 Visual Studio，你甚至可以走邪路，例如装一个 Windows 虚拟机。但那又失去了 AnduinOS 的初衷。别担心，VSCode 仍然在我们手边。
 
-当然我们还有其他代码编辑器，例如 NeoVim、Sublime Text 等，但我都没怎么用过，所以今天只说 VSCode。我通过给 VSCode 安装一些插件，尝试使 VSCode 的 C# 开发体验更接近 Visual Studio。
+虽然市场上还有 NeoVim、Sublime Text 等其他编辑器，但我对此不太熟悉，因此今天我将把注意力集中在 VSCode 上。我计划通过一些插件，让 VSCode 的 C# 开发体验更接近 Visual Studio 的标准。
 
 也就是说，这篇文章不止适用于 AnduinOS，而且适用于所有可以使用 VSCode 的操作系统。
 
-**我并不常使用 VSCode 开发 .NET，所以以下只是我很短的使用时间内的“经验之谈”。如果你有更好的建议，欢迎在评论区留言。如果你不喜欢，就当我在瞎扯即可。**
+**我并不常使用 VSCode 开发 .NET，以下内容纯属我在短暂使用后的“经验之谈”。如果你有更好的建议，欢迎在评论区留言；若觉得不合适，也可以当我在随意发言。**
 
 AnduinOS 的文档中已经详细介绍了如何在 AnduinOS 上安装 .NET SDK、VSCode 等操作，还有很多能让你的生活变得更好的设置，甚至还教了你如何安装微信，详情请查阅文档。这篇文章不再介绍安装 SDK 和 VSCode 的步骤。
 
@@ -35,7 +35,7 @@ AnduinOS 的文档中已经详细介绍了如何在 AnduinOS 上安装 .NET SDK�
 
 上图中的第二个插件 C# 是必装的插件之一，它提供 C# 的基本语言支持。
 
-安装完后，你可以去该插件的 settings 中查看有没有你想开启而默认没有开启的选项。
+安装完成后，不妨逛逛这个插件的 settings，看看有没有那些默认关闭却值得开启的选项，简直像是开启了隐藏关卡。
 
 <!-- 关于：Roslyn 编译器特性 / Roslynator / 自动使用（也许还有命名空间自动完成 / C# XML 文档注释）
 
@@ -66,7 +66,7 @@ Visual Studio 的 C# 编辑体验大部分是通过 C# 的 Roslyn 编译器提�
 
 呼，想起那些尝试过 VS Code 的 C# 并根据默认设置做出判断的怀疑者，我真的感到痛心。随着 OmniSharp 即将被淘汰，我想知道新的 VS Code + Roslyn 体验会是怎样的？  -->
 
-另外，我习惯在 settings.json 文件中，添加这几项：
+此外，我习惯在 settings.json 文件中添加以下几项，以便让 VSCode 更加给力：
 
 ```json
 "dotnet.server.useOmnisharp": true,
@@ -76,19 +76,18 @@ Visual Studio 的 C# 编辑体验大部分是通过 C# 的 Roslyn 编译器提�
 "omnisharp.enableRoslynAnalyzers": true
 ```
 
-我常常听说有开发者抱怨使用 VSCode 开发 .NET 时的功能太弱了，如果你也这么想，你可以尝试一下我的设置方式，这可能带来一些改变。
-
+有时我听到开发者抱怨 VSCode 在 .NET 开发上功能不够强大。如果你也有类似的疑虑，不妨试试我的设置，或许能为你的开发体验带来一些意想不到的提升。
 
 ## 2. 强大的 C# Dev Kit
 
-1. 上图第 1 个插件：C# Dev Kit，为 VSCode 提供了类似 Visual Studio 的功能，例如创建 solution、创建 project、build、run、代码补全、debugging、testing 等。是一个非常全面的插件。
-2. 上图第 4 个插件 IntelliCode for C# Dev Kit，看名字就知道是配合 C# Dev Kit 用的智能代码提示工具了。
+1. 上图第 1 个插件：C# Dev Kit，为 VSCode 提供了类似 Visual Studio 的功能，例如创建 solution、创建 project、build、run、代码补全、debugging、testing 等。可以说，这个插件非常全面，几乎把所有你需要的功能都打包了。
+2. 第四个插件 IntelliCode for C# Dev Kit 则是那种一听名字就知道的智能代码提示工具，是 C# Dev Kit 的绝佳搭档。
 
-这几个插件是最近两年 Microsoft 开发的，可以给 VSCode 的用户爽用，但是代价呢？
+最近两年 Microsoft 开发了这个插件，可以给 VSCode 的用户爽用，但是代价呢？
 
-这个插件的许可证与 Visual Studio 类似，对于个人、学术和开源项目，可以免费使用。出于商业目的，最多 5 人的团队也可以免费使用。对于 6 名以上的开发人员，这些用户需要 Visual Studio Professional（或更高版本）的订阅。
+它们的许可证政策与 Visual Studio 相似，个人、学术和开源项目可以免费使用，而对于最多 5 人的团队，商业目的下也能免费使用。至于 6 人以上的团队，恭喜你们，需要 Visual Studio Professional（或更高版本）的订阅。
 
-在使用该插件时，还需要登录微软账号来授权，所以如你所见，我根本没有安装它们，我怕我不小心违反它的许可证。
+在使用该插件时，还需要登录微软账号来授权，所以如你所见，我根本没有安装它们，免得不小心踩了许可证的红线。
 
 ## 3. Roslynator
 
@@ -98,11 +97,11 @@ Visual Studio 的 C# 编辑体验大部分是通过 C# 的 Roslyn 编译器提�
 
 而 Jetbrains Rider 提供了 2500+ 个分析器，所以你可以把它当作 Rider 的代码优化和重构功能的一个免费简化版。
 
-如果你在前面的设置中开启了 `"omnisharp.enableRoslynAnalyzers": true`，那么你可能会发现 Roslynator 的功能有些重复。但是我在使用时的确有一种与 Rider 相似的感觉。如果你也使用过 Rider，它可能教过你怎么写代码，反正我被它教做人过。而 Roslynator 也可能带给你类似的惊喜。
+如果你在前面的设置中开启了 `"omnisharp.enableRoslynAnalyzers": true`，你可能会发现 Roslynator 的功能有些重复。但是我在使用时的确有一种似曾相识的感觉。如果你曾经被 Rider 教过如何写代码，那你一定懂我说的那种“惊喜”，而 Roslynator 也可能会带给你类似的启发。
 
 ## 4. C# XML Documentation Comments
 
-这个插件可以帮助你快速生成 XML 文档注释，就像在 Rider 中一样，只需要输入 `///`，就可以生成一个 XML 文档注释了，例如这样：
+这个插件可以帮助你快速生成 XML 文档注释，仿佛在 Rider 中的体验，只需要输入 `///`，就可以生成一个 XML 文档注释了，例如：
 
 ```xml
 /// <summary>
@@ -118,9 +117,9 @@ Visual Studio 的 C# 编辑体验大部分是通过 C# 的 Roslyn 编译器提�
 
 ## 6. Github Copilot
 
-Github Copilot 是一个每月 10 美元，包年 100 美元的强大的代码提示工具，它可以帮助你快速编写代码，但是它的订阅价格可能会让你望而却步。
+Github Copilot 是一个每月 10 美元，包年 100 美元的强大的代码提示工具，它可以帮助你快速编写代码，但是它的订阅价格可能会让你不禁咽口水。
 
-相信大家就算没用过也有所耳闻，它当年被发布出来后，一时风头无两，是比 ChatGPT、Claude 等更早的，让程序员们感受到了被 AI 取代的恐惧的产品。后来接入 ChatGPT 后又火了一把，但现在似乎被新秀 Cursor 抢走了风头。原谅我的懒惰，我下载 Cursor 后就用过一次，不知道它现在发展到什么程度了，所以我只能说 Copilot 是一个很好的产品，但如果你希望把它跟 Cursor 做比较，考虑订阅哪个更划算的话，建议你去咨询经常使用两者的工程师。
+即使你没用过这个工具，想必也听说过它的名声。当年它被发布，一时风头无两，几乎让程序员们感受到被 AI 取代的恐惧。后来与 ChatGPT 联手，再次掀起波澜，但如今似乎被新兴的 Cursor 抢了风头。对于我这个懒人来说，Cursor 只用过一次，一直没有深入学习它，不便评论。所以我只能说 Copilot 是一个很好的产品，但如果你希望把它跟 Cursor 做比较，考虑订阅哪个更划算的话，建议你去咨询经常使用两者的工程师。
 
 ## 总结
 
