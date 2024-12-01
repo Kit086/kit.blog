@@ -3,7 +3,7 @@ title: Linux Docker 的 root 和 rootless 模式
 slug: linux-docker-root-rootless-modes
 create_time: 2024-11-17 21:46:00
 last_updated: 2024-11-17 21:46:00
-description: 本文从一个 Docker pull 的报错：`Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)`，引出了笔者对 Linux 系统中的 root 和 rootless 模式的逐步学习，理解，以及 rootless 模式下的一些配置和使用方法。
+description: 本文从一个 Docker pull 的报错：Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)，引出了笔者对 Linux 系统中的 root 和 rootless 模式的逐步学习，理解，以及 rootless 模式下的一些配置和使用方法。
 tags:
   - AnduinOS
   - Linux
@@ -55,8 +55,6 @@ sudo nano /etc/systemd/system/docker.service.d/override.conf
 
 ChatGPT 从以下几个方面给了我解释：
 
----
-
 ### 1. **运行模式**
 - **不加 `sudo`：**
   - 使用了 **rootless 模式** (`Security Options: rootless`)。
@@ -93,8 +91,6 @@ ChatGPT 从以下几个方面给了我解释：
   - 一个是全局的 root 模式 Docker 实例。
 - rootless Docker 是以你的普通用户权限运行的，它的存储和运行环境与全局的 Docker 引擎互相独立。
 - rootless 模式可以独立运行，不需要 root 权限，但由于其限制，无法共享 root 模式的镜像和容器。
-
----
 
 显然 rootless 是一个更安全的模式，但是它也有一些限制，例如无法共享 root 模式的镜像和容器，以及无法使用一些功能（例如 CPU 和 I/O 限制支持）。而 root 模式则是一个全特权模式，功能更加完整，但需要提升到 root 权限。
 
@@ -156,8 +152,6 @@ systemctl --user restart docker
 
 **Rootless Docker** 是一个对 Linux 用户非常重要的功能，尤其是在需要更高安全性和用户隔离的场景下。下面是一个全面的介绍，让你快速了解它的核心概念、优点、限制和适用场景。
 
----
-
 ### **什么是 Rootless Docker？**
 
 **Rootless Docker** 是 Docker 引擎的一种运行模式，在这种模式下，Docker 不需要以 `root` 权限运行。用户可以在自己的权限范围内运行容器，而无需提升为超级用户。
@@ -171,8 +165,6 @@ systemctl --user restart docker
   - 以普通用户权限运行 Docker 容器。
   - 容器的运行和存储环境完全隔离，不能影响主机系统的全局环境。
   - 容器运行时（如 `runc`）会使用用户命名空间（User Namespace）技术将容器内部的 `root` 用户映射为主机的普通用户。
-
----
 
 ### **为什么需要 Rootless Docker？**
 
@@ -191,8 +183,6 @@ systemctl --user restart docker
 4. **简化权限管理**：
    - 不需要为每个用户配置 `sudo` 或将用户加入 `docker` 组。
 
----
-
 ### **Rootless Docker 的工作原理**
 
 1. **用户命名空间 (User Namespace)**：
@@ -207,8 +197,6 @@ systemctl --user restart docker
    - Rootless 模式默认使用 `slirp4netns` 或 `VPNKit` 来模拟用户态网络。
    - 不需要修改主机的网络配置（如 `iptables`），避免影响其他用户。
 
----
-
 ### **Rootless Docker 的优点**
 
 1. **更高的安全性**：
@@ -222,8 +210,6 @@ systemctl --user restart docker
 
 4. **无需复杂配置**：
    - 不需要配置系统级的存储或网络，适合轻量化需求。
-
----
 
 ### **Rootless Docker 的限制**
 
@@ -244,8 +230,6 @@ systemctl --user restart docker
    - 需要 Linux Kernel >= 5.11 才能获得最佳体验。
    - 不同 Linux 发行版对 rootless 的支持可能不同。
 
----
-
 ### **Rootless Docker 的使用场景**
 
 1. **开发环境**：
@@ -259,8 +243,6 @@ systemctl --user restart docker
 
 4. **教育与实验**：
    - 在不需要管理员权限的情况下进行容器实验。
-
----
 
 ### **如何使用 Rootless Docker？**
 
@@ -298,8 +280,6 @@ systemctl --user restart docker
    ```
    查看 `Security Options` 是否包含 `rootless`。
 
----
-
 ### **Rootless Docker 的优化建议**
 
 1. **提升网络性能**：
@@ -314,8 +294,6 @@ systemctl --user restart docker
 4. **监控与调试**：
    - 使用 `docker logs` 和 `docker stats` 监控 rootless 容器的性能。
 
----
-
 Rootless Docker 是一个功能强大的工具，尤其适合开发和安全敏感场景。如果你感兴趣，可以尝试在本地实验并探索它的完整功能！
 
 ## 补充内容 2. 两种模式下的关键配置文件和目录的对比
@@ -324,19 +302,16 @@ Rootless Docker 是一个功能强大的工具，尤其适合开发和安全敏�
 
 以下是两种模式下的关键配置文件和目录的对比：
 
----
 
 ### **Root Docker 和 Rootless Docker 配置文件位置对比**
 
 | 配置项                 | Root Docker (需要 `sudo`)                     | Rootless Docker (普通用户)                       |
-|------------------------|---------------------------------------------|------------------------------------------------|
+|:-:|:-:|:-:|
 | **Docker 主配置文件**   | `/etc/docker/daemon.json`                  | `~/.config/docker/daemon.json`                |
 | **运行时套接字**        | `/var/run/docker.sock`                     | `$XDG_RUNTIME_DIR/docker.sock`                |
 | **存储目录**           | `/var/lib/docker`                          | `~/.local/share/docker`                       |
 | **日志目录**           | `/var/lib/docker/containers/<container-id>` | `~/.local/share/docker/containers/<container-id>` |
 | **系统服务配置**       | `/lib/systemd/system/docker.service`        | `~/.config/systemd/user/docker.service`       |
-
----
 
 ### **Rootless Docker 的配置文件详解**
 
@@ -371,8 +346,6 @@ echo $XDG_RUNTIME_DIR
 ~/.local/share/docker
 ```
 这是普通用户目录，避免与系统全局的 `/var/lib/docker` 冲突。
-
----
 
 ### **与 Root Docker 的共存**
 
