@@ -22,7 +22,7 @@ export async function getPostBySlug(slug: string): Promise<Post> {
   const { data, content } = matter(fileContents);
 
   // 转换 markdown 为 HTML
-  const contentHtml = await markdownToHtml(content);
+  const contentHtml = await markdownToHtml(content, slug);
 
   return {
     ...data as Omit<Post, 'contentHtml'>,
