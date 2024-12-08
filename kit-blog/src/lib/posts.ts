@@ -30,6 +30,10 @@ export async function getPostBySlug(slug: string): Promise<Post> {
   };
 }
 
+export function getAllPostSlugs(): string[] {
+  return fs.readdirSync(postsDirectory);
+}
+
 export function getAllPosts(): Post[] {
   const postDirs = fs.readdirSync(postsDirectory);
   const posts = postDirs.map((dir) => {

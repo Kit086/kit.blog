@@ -1,4 +1,4 @@
-import { getPostBySlug, getAllPosts } from '@/lib/posts';
+import { getPostBySlug, getAllPostSlugs } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 import type { Post } from '@/interfaces/Post';
 
@@ -9,9 +9,9 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const posts = getAllPosts();
-  return posts.map((post) => ({
-    slug: post.slug,
+  const slugs = getAllPostSlugs();
+  return slugs.map((slug) => ({
+    slug,
   }));
 }
 
