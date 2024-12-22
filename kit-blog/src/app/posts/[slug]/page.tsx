@@ -2,11 +2,11 @@ import { getPostBySlug, getAllPostSlugs } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 import type { Post } from '@/interfaces/Post';
 
-interface Props {
+type Params = {
   params: {
-    slug: string;
+    slug: string | string[];
   };
-}
+};
 
 export async function generateStaticParams() {
   const slugs = getAllPostSlugs();
@@ -15,9 +15,17 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function PostPage({ params }: Props) {
+export default async function PostPage(props: Params) {
+  const resolvedParams = await Promise.resolve(props.params);
+  const slug = resolvedParams.slug;
+
+  // 如果 slug 是数组或不是字符串，返回 404
+  if (Array.isArray(slug) || typeof slug !== 'string') {
+    notFound();
+  }
+
   try {
-    const post: Post = await getPostBySlug(params.slug);
+    const post: Post = await getPostBySlug(slug);
 
     return (
       <article className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto">
