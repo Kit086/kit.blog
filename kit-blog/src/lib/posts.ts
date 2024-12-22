@@ -30,7 +30,11 @@ export async function getPostBySlug(slug: string): Promise<Post> {
       contentHtml,
     };
   } catch (error) {
-    throw new Error(`Error parsing markdown file ${fullPath}: ${error.message}`);
+    if (error instanceof Error) {
+      throw new Error(`Error parsing markdown file ${fullPath}: ${error.message}`);
+    } else {
+      throw new Error(`Error parsing markdown file ${fullPath}: ${String(error)}`);
+    }
   }
 }
 
