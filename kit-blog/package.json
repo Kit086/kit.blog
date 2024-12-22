@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@tailwindcss/typography": "^0.5.15",
+    "daisyui": "^4.12.22",
     "gray-matter": "^4.0.3",
     "next": "15.0.4",
     "react": "^19.0.0",

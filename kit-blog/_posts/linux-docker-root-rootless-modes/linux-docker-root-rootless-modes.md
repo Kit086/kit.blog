@@ -3,7 +3,7 @@ title: Linux Docker 的 root 和 rootless 模式
 slug: linux-docker-root-rootless-modes
 create_time: 2024-11-17 21:46:00
 last_updated: 2024-11-17 21:46:00
-description: 本文从一个 Docker pull 的报错：Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)，引出了笔者对 Linux 系统中的 root 和 rootless 模式的逐步学习，理解，以及 rootless 模式下的一些配置和使用方法。
+description: "本文从一个 Docker pull 的报错：Error response from daemon: Get \"https://registry-1.docker.io/v2/\": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)，引出了笔者对 Linux 系统中的 root 和 rootless 模式的逐步学习，理解，以及 rootless 模式下的一些配置和使用方法。"
 tags:
   - AnduinOS
   - Linux
@@ -191,7 +191,7 @@ systemctl --user restart docker
 
 2. **文件系统和存储**：
    - 容器的数据存储在用户目录中（默认路径：`~/.local/share/docker`）。
-   - 不依赖于 `/var/lib/docker`，避免了与系统级存储冲突。
+   - 不依赖于 `/var/lib/docker`，避免与系统级存储冲突。
 
 3. **网络隔离**：
    - Rootless 模式默认使用 `slirp4netns` 或 `VPNKit` 来模拟用户态网络。
@@ -367,4 +367,3 @@ echo $XDG_RUNTIME_DIR
 - **独立的运行环境**：
    - 两者的网络、镜像和容器数据完全隔离。
    - 使用 `DOCKER_HOST` 环境变量指定要操作的 Docker 实例。
-

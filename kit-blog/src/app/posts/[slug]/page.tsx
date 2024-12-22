@@ -21,7 +21,7 @@ export default async function PostPage({ params }: Props) {
     const post: Post = await getPostBySlug(resolvedParams.slug);
 
     return (
-      <article className="prose lg:prose-xl mx-auto px-4">
+      <article className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto">
         <h1>{post.title}</h1>
         <div className="text-sm text-gray-500">
           <time dateTime={post.create_time}>
