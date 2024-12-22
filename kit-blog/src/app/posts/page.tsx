@@ -3,13 +3,15 @@ import PostCard from '@/components/PostCard';
 import { Suspense } from 'react';
 
 export default function PostsPage() {
-  let posts = [];
+  let posts: Array<{ slug: string; title: string; create_time: string; last_updated: string; description: string; tags: string[] }> = [];
   let error = null;
 
   try {
     posts = getAllPosts();
   } catch (e) {
-    error = e.message;
+    if (e instanceof Error) {
+      error = e.message;
+    }
     console.error('Error loading posts:', e);
   }
 
