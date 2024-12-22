@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import type { Post } from '@/interfaces/Post';
 
 interface Props {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
 export async function generateStaticParams() {
@@ -17,8 +17,7 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: Props) {
   try {
-    const resolvedParams = await params;
-    const post: Post = await getPostBySlug(resolvedParams.slug);
+    const post: Post = await getPostBySlug(params.slug);
 
     return (
       <article className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto">
@@ -27,7 +26,7 @@ export default async function PostPage({ params }: Props) {
           <time dateTime={post.create_time}>
             {new Date(post.create_time).toLocaleDateString()}
           </time>
-          {post.tags.length > 0 && (
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-2">
               {post.tags.map((tag) => (
                 <span key={tag} className="mr-2 px-2 py-1 bg-gray-100 rounded-md">
@@ -41,6 +40,7 @@ export default async function PostPage({ params }: Props) {
       </article>
     );
   } catch (error) {
+    console.error('Error loading post:', error);
     notFound();
   }
 }

@@ -39,11 +39,30 @@ export async function getPostBySlug(slug: string): Promise<Post> {
 }
 
 export function getAllPostSlugs(): string[] {
-  return fs.readdirSync(postsDirectory);
+  try {
+    // 确保目录存在
+    if (!fs.existsSync(postsDirectory)) {
+      console.warn('Posts directory does not exist:', postsDirectory);
+      return [];
+    }
+
+    // 获取所有文章目录
+    return fs.readdirSync(postsDirectory).filter(dir => {
+      const fullPath = path.join(postsDirectory, dir);
+      // 确保是目录且包含 markdown 文件
+      return (
+        fs.statSync(fullPath).isDirectory() &&
+        fs.readdirSync(fullPath).some(file => file.endsWith('.md'))
+      );
+    });
+  } catch (error) {
+    console.error('Error getting post slugs:', error);
+    return [];
+  }
 }
 
 export function getAllPosts(): Post[] {
-  const postDirs = fs.readdirSync(postsDirectory);
+  const postDirs = getAllPostSlugs();
   const posts = postDirs.map((dir) => {
     try {
       const fullPath = path.join(postsDirectory, dir);
@@ -58,7 +77,10 @@ export function getAllPosts(): Post[] {
       const fileContents = fs.readFileSync(path.join(fullPath, mdFile), 'utf8');
       const { data } = matter(fileContents);
 
-      return data as Post;
+      return {
+        ...data,
+        slug: dir,
+      } as Post;
     } catch (error) {
       console.error(`Error processing post in directory ${dir}:`, error);
       return null;

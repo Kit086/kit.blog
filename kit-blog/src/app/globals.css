@@ -2,6 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* 目录样式 */
+  :is(h2:has(+ ul)) {
+    @apply mt-8 mb-4 text-xl font-bold;
+  }
+
+  /* 目录中的列表样式 */
+  :is(h2:has(+ ul)) + ul {
+    @apply pl-0 list-none space-y-2 mb-8 p-4 bg-base-200 rounded-lg;
+  }
+
+  /* 目录中的链接样式 */
+  :is(h2:has(+ ul)) + ul a {
+    @apply text-base-content no-underline hover:text-primary transition-colors;
+  }
+
+  /* 目录中的子列表样式 */
+  :is(h2:has(+ ul)) + ul ul {
+    @apply pl-4 mt-2 list-none;
+  }
+
+  /* 适配暗色主题 */
+  [data-theme="dark"] :is(h2:has(+ ul)) + ul {
+    @apply bg-base-300;
+  }
+
+  .table-of-contents {
+    @apply my-8 p-4 bg-base-200 rounded-lg;
+  }
+
+  .table-of-contents > ul {
+    @apply list-none p-0 m-0;
+  }
+
+  .table-of-contents ul {
+    @apply space-y-2;
+  }
+
+  .table-of-contents ul ul {
+    @apply ml-4 mt-2;
+  }
+
+  .table-of-contents a {
+    @apply text-base-content no-underline hover:text-primary transition-colors;
+  }
+
+  /* 目录标题 */
+  .table-of-contents::before {
+    content: "目录";
+    @apply block text-lg font-bold mb-4;
+  }
+
+  /* 适配暗色主题 */
+  [data-theme="dark"] .table-of-contents {
+    @apply bg-base-300;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

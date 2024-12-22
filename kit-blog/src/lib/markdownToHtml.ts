@@ -1,6 +1,9 @@
 import { remark } from 'remark';
 import html from 'remark-html';
 import { visit } from 'unist-util-visit';
+import remarkToc from 'remark-toc';
+import remarkGfm from 'remark-gfm';
+import remarkSlug from 'remark-slug';
 
 function createImagePathPlugin(slug: string) {
   return () => (tree: any) => {
@@ -17,9 +20,22 @@ function createImagePathPlugin(slug: string) {
 }
 
 export async function markdownToHtml(markdown: string, slug: string) {
+  // 在文件开头添加目录标记
+  const contentWithToc = markdown.includes('[TOC]')
+    ? markdown.replace('[TOC]', '## Table of Contents')
+    : '## Table of Contents\n\n' + markdown;
+
   const result = await remark()
+    .use(remarkSlug)  // 添加标题的 id
+    .use(remarkToc, {
+      heading: 'Table of Contents',
+      tight: true,
+      maxDepth: 3,
+    })
+    .use(remarkGfm)   // GitHub Flavored Markdown
     .use(createImagePathPlugin(slug))
-    .use(html)
-    .process(markdown);
+    .use(html, { sanitize: false })
+    .process(contentWithToc);
+
   return result.toString();
 }
