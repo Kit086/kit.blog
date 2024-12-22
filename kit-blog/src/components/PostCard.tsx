@@ -1,33 +1,37 @@
 import Link from 'next/link';
-import type { Post } from '@/interfaces/Post';
+import { Post } from '@/interfaces/Post';
 
-interface PostCardProps {
-  post: Post;
-}
-
-export default function PostCard({ post }: PostCardProps) {
-  const formattedDate = new Date(post.create_time).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-
+export default function PostCard({ post }: { post: Post }) {
   return (
-    <div className="card bg-base-100 shadow-xl">
+    <div className="card bg-base-200 shadow-xl transition-all hover:shadow-2xl">
       <div className="card-body">
         <Link href={`/posts/${post.slug}`}>
-          <h2 className="card-title hover:text-primary transition-colors">
+          <h2 className="card-title text-2xl hover:text-primary/80 transition-colors">
             {post.title}
           </h2>
         </Link>
-        <time className="text-sm text-base-content/70" dateTime={post.create_time}>
-          {formattedDate}
-        </time>
-        <p className="mt-2">{post.description}</p>
-        <div className="card-actions justify-start mt-4">
-          {post.tags.map((tag) => (
-            <div key={tag} className="badge badge-outline">{tag}</div>
-          ))}
+        <div className="text-sm text-base-content/70 space-y-2">
+          <time dateTime={post.create_time}>
+            {new Date(post.create_time).toLocaleDateString()}
+          </time>
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span key={tag} className="badge badge-outline">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <p className="text-base-content/80 mt-4">{post.description}</p>
+        <div className="card-actions justify-end mt-4">
+          <Link 
+            href={`/posts/${post.slug}`}
+            className="btn btn-primary btn-sm"
+          >
+            阅读更多
+          </Link>
         </div>
       </div>
     </div>
