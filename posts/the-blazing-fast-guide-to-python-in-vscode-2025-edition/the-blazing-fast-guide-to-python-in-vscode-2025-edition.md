@@ -500,8 +500,8 @@ uv run ty check
 
 但这种方式适合于已经有了一种编程的“意识”的同学们，你首先能清晰的知道什么是环境，什么是虚拟环境，什么是终端，什么是包，什么是绝对路径，相对路径等等，否则你理解这篇文章的内容会很吃力。但是我们现在拥有 AI，你可以向它们随意提问。你也可以访问 uv、ruff 和 ty 的官方文档，获取更多信息。
 
-uv 的文档：https://docs.astral.sh/uv/
-ruff 的文档：https://docs.astral.sh/ruff/
-ty 的文档：https://docs.astral.sh/ty/
+- uv 的文档：https://docs.astral.sh/uv/
+- ruff 的文档：https://docs.astral.sh/ruff/
+- ty 的文档：https://docs.astral.sh/ty/
 
 如果你学习 Python 的目的是科研，而且老师同学都还在用 anaconda 等，你的主力也应该是 anaconda，以免于麻烦，也能更好跟他们配合。但是如果你学习 Python 的目的是为了进入企业工作，或者你已经在企业工作了，那么我强烈建议你使用 uv、ruff 和 ty 来配置你的 Python 开发环境。它们会让你事半功倍。
