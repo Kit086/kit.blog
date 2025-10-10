@@ -235,6 +235,15 @@ uv run ruff check
 }
 ```
 
+简单解释一下这一段配置：
+
+- `"[python]": { ... }`：这表示括号内的所有设置将专门应用于扩展名为 `.py` 的 Python 文件，而不会影响其他类型的文件（如 JavaScript, HTML 等）。
+- `"editor.formatOnSave": true,`：此设置为 true 时，会在每次保存 Python 文件时自动对其进行格式化。格式化的规则由下面设置的默认格式化工具（这里是 Ruff）来决定。
+- `"editor.codeActionsOnSave": { ... },`：这个设置允许配置一组在文件保存时自动执行的“代码操作” (Code Actions)。
+  - `"source.fixAll": "explicit",`：这个操作会应用所有可用的自动修复建议来修正代码中的问题。这通常包括修复由 linter（代码检查工具）发现的语法或风格问题。设置为 "explicit" 意味着这个操作只会在明确保存文件时（例如，使用快捷键 Ctrl+S）触发，而不是在自动保存时触发。
+  - `"source.organizeImports": "explicit",`：此操作会自动整理导入语句，它会移除未使用的导入并对现有的导入进行排序。这有助于保持代码的整洁和一致性。同样，"explicit" 表示这个操作只在明确保存时执行。
+- `"editor.defaultFormatter": "charliermarsh.ruff",`：这一行指定了用于格式化 Python 代码的默认工具。在这里，它被设置为 charliermarsh.ruff，这是 Ruff VS Code 扩展 的唯一标识符。Ruff 是一个用 Rust 编写的、速度极快的 Python linter 和代码格式化工具，它可以替代多个传统的工具，如 Flake8, isort 和 Black。
+
 ## 8. 体验 ruff
 
 现在再回到 `bad_code.py` 文件，如截图所示：
